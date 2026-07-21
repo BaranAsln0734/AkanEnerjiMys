@@ -1,0 +1,21 @@
+{
+  "short_name": "CVSPower",
+  "name": "CVSPower Jeneratör Müşteri Yönetim Sistemi",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/logo-2025.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1e293b",
+  "theme_color": "#f97316",
+  "display": "standalone",
+  "orientation": "portrait"
+}

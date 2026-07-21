@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CVSPower</string>
+    <string name="title_activity_main">CVSPower</string>
+    <string name="package_name">com.cvspower.app</string>
+    <string name="custom_url_scheme">com.cvspower.app</string>
+</resources>
