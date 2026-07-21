@@ -699,7 +699,11 @@ app.get('/api/diag-pm2', asyncHandler(async (req: any, res: any) => {
   const { execSync } = await import('node:child_process');
   let result = '';
   try {
-    result += execSync('pm2 list', { encoding: 'utf-8' });
+    result += execSync('pm2 list', { encoding: 'utf-8' }) + '\n\n';
+    result += `--- PM2 SHOW akanenerji-backend ---\n`;
+    result += execSync('pm2 show akanenerji-backend', { encoding: 'utf-8' }) + '\n\n';
+    result += `--- PM2 SHOW cvs-backend ---\n`;
+    result += execSync('pm2 show cvs-backend', { encoding: 'utf-8' }) + '\n';
   } catch (err: any) {
     result += `Error running pm2: ${err.message}\nStderr: ${err.stderr || ''}`;
   }
