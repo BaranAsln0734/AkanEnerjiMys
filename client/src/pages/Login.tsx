@@ -55,7 +55,7 @@ const Login = () => {
         /* Left Information Panel */
         .login-info-panel {
           flex: 1.2;
-          background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+          background: linear-gradient(135deg, #242217 0%, #0f172a 100%);
           padding: 60px;
           display: flex;
           flex-direction: column;
@@ -68,7 +68,7 @@ const Login = () => {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 60%);
+          background: radial-gradient(circle at 10% 20%, rgba(254, 211, 4, 0.15) 0%, transparent 60%);
           pointer-events: none;
         }
         .info-header {
@@ -78,7 +78,7 @@ const Login = () => {
           z-index: 2;
         }
         .info-logo-img {
-          height: 96px;
+          height: 120px;
           width: auto;
         }
         .info-main {
@@ -89,7 +89,7 @@ const Login = () => {
         .info-tagline {
           font-size: 14px;
           font-weight: 800;
-          color: #3b82f6;
+          color: #FED304;
           text-transform: uppercase;
           letter-spacing: 2px;
           margin-bottom: 12px;
@@ -116,12 +116,12 @@ const Login = () => {
           width: 42px;
           height: 42px;
           border-radius: 12px;
-          background: rgba(37, 99, 235, 0.15);
-          border: 1px solid rgba(37, 99, 235, 0.25);
+          background: rgba(229, 169, 0, 0.15);
+          border: 1px solid rgba(229, 169, 0, 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #3b82f6;
+          color: #FED304;
           flex-shrink: 0;
         }
         .feature-content h4 {
@@ -153,7 +153,7 @@ const Login = () => {
           justify-content: center;
           padding: 40px;
           position: relative;
-          background: radial-gradient(circle at 70% 80%, rgba(30, 58, 138, 0.12) 0%, transparent 60%);
+          background: radial-gradient(circle at 70% 80%, rgba(229, 169, 0, 0.12) 0%, transparent 60%);
         }
         
         .glow-bubble-1 {
@@ -161,7 +161,7 @@ const Login = () => {
           width: 400px;
           height: 400px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(229, 169, 0, 0.12) 0%, transparent 70%);
           top: -100px;
           right: -100px;
           animation: pulseGlow 10s infinite alternate ease-in-out;
@@ -172,7 +172,7 @@ const Login = () => {
           width: 500px;
           height: 500px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(30, 58, 138, 0.1) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(229, 169, 0, 0.08) 0%, transparent 70%);
           bottom: -150px;
           left: -100px;
           animation: driftGlow 14s infinite alternate-reverse ease-in-out;
@@ -192,7 +192,7 @@ const Login = () => {
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .login-card:hover {
-          border-color: rgba(37, 99, 235, 0.25);
+          border-color: rgba(254, 211, 4, 0.25);
         }
         .logo-container {
           display: flex;
@@ -200,7 +200,7 @@ const Login = () => {
           margin-bottom: 25px;
         }
         .logo-img {
-          height: 68px;
+          height: 88px;
           width: auto;
           filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
         }
@@ -229,8 +229,8 @@ const Login = () => {
           box-sizing: border-box;
         }
         .login-input:focus {
-          border-color: #2563eb !important;
-          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
+          border-color: #e5a900 !important;
+          box-shadow: 0 0 0 4px rgba(254, 211, 4, 0.15) !important;
           background: rgba(30, 41, 59, 0.6) !important;
           outline: none;
         }
@@ -242,10 +242,10 @@ const Login = () => {
           transition: color 0.3s ease;
         }
         .login-input:focus + .login-icon {
-          color: #2563eb;
+          color: #e5a900;
         }
         .login-button {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, #e5a900 0%, #c69200 100%);
           color: #fff;
           border: none;
           border-radius: 14px;
