@@ -519,13 +519,25 @@ app.put('/api/generators/:id', authMiddleware, asyncHandler(async (req, res) => 
     res.json({ success: true });
 }));
 
-// Service Records
 app.get('/api/service-records', authMiddleware, asyncHandler(async (req, res) => {
   const db = getDb();
   let query = `
-    SELECT sr.*, g.serial_number, g.brand, g.model
+    SELECT 
+      sr.*, 
+      g.serial_number, 
+      g.brand, 
+      g.model,
+      g.serial_number AS generator_serial, 
+      g.brand AS generator_brand, 
+      g.model AS generator_model,
+      g.kva AS generator_kva,
+      g.location AS generator_location,
+      c.name AS customer_name,
+      c.phone AS customer_phone,
+      c.address AS customer_address
     FROM service_records sr
     JOIN generators g ON sr.generator_id = g.id
+    JOIN customers c ON g.customer_id = c.id
   `;
   const params: any[] = [];
   if (req.user.role === 'customer') {
@@ -702,6 +714,141 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   } catch (err: any) {
     console.error('Error in quick-service endpoint:', err);
     res.status(500).json({ error: err.message || 'Veri tabanı kayıt hatası meydana geldi.' });
+  }
+}));
+
+app.put('/api/quick-service/:id', authMiddleware, asyncHandler(async (req: any, res: any) => {
+  const { id } = req.params;
+  const { customer, generator, service } = req.body;
+  const db = getDb();
+  
+  try {
+    // 1. Get existing service record to find generator_id
+    const existingService = await db.get('SELECT generator_id FROM service_records WHERE id = ?', id);
+    if (!existingService) {
+      return res.status(404).json({ error: 'Servis kaydı bulunamadı.' });
+    }
+    const generatorId = existingService.generator_id;
+    
+    // 2. Get generator to find customer_id
+    const existingGen = await db.get('SELECT customer_id FROM generators WHERE id = ?', generatorId);
+    const customerId = existingGen?.customer_id;
+    
+    // 3. Update customer
+    if (customerId) {
+      await db.run(
+        'UPDATE customers SET name = ?, phone = ?, address = ?, customer_type = ?, category = ? WHERE id = ?',
+        [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel', customerId]
+      );
+    }
+    
+    // 4. Update generator
+    let runtime = generator.runtime_hours || '';
+    if (service.checklist_json) {
+      try {
+        const parsed = JSON.parse(service.checklist_json);
+        if (parsed.measurements?.runtime_hours) {
+          runtime = parsed.measurements.runtime_hours;
+        }
+      } catch (e) {}
+    }
+    
+    await db.run(
+      'UPDATE generators SET serial_number = ?, model = ?, brand = ?, kva = ?, installation_date = ?, next_maintenance_date = ?, warranty_status = ?, contract_status = ?, location = ?, address = ?, runtime_hours = ? WHERE id = ?',
+      [
+        generator.serial_number,
+        generator.model,
+        generator.brand || '',
+        generator.kva || '',
+        generator.installation_date || new Date().toISOString().split('T')[0],
+        service.next_maintenance_date || new Date().toISOString().split('T')[0],
+        generator.warranty_status || 'Yok',
+        generator.contract_status || 'Yok',
+        generator.location || '',
+        generator.address || customer.address,
+        runtime,
+        generatorId
+      ]
+    );
+    
+    // 5. Update service record
+    let total_cost = 0;
+    if (service.used_parts && Array.isArray(service.used_parts)) {
+      for (const part of service.used_parts) {
+        const partData = await db.get('SELECT unit_price FROM parts WHERE id = ?', part.id);
+        total_cost += (partData?.unit_price || 0) * part.quantity;
+      }
+    }
+    
+    // Restore old stock
+    const oldParts = await db.all('SELECT part_id, quantity FROM service_parts WHERE service_record_id = ?', id);
+    for (const op of oldParts) {
+      await db.run('UPDATE parts SET stock_quantity = stock_quantity + ? WHERE id = ?', [op.quantity, op.part_id]);
+    }
+    
+    // Delete old service parts
+    await db.run('DELETE FROM service_parts WHERE service_record_id = ?', id);
+    
+    // Insert new service parts and deduct stock
+    if (service.used_parts && Array.isArray(service.used_parts)) {
+      for (const part of service.used_parts) {
+        await db.run(
+          'INSERT INTO service_parts (service_record_id, part_id, quantity) VALUES (?, ?, ?)',
+          [id, part.id, part.quantity]
+        );
+        await db.run(
+          'UPDATE parts SET stock_quantity = stock_quantity - ? WHERE id = ?',
+          [part.quantity, part.id]
+        );
+      }
+    }
+    
+    // Update service record details
+    await db.run(
+      'UPDATE service_records SET service_date = ?, description = ?, technician_signature_url = ?, customer_signature_url = ?, service_fee = ?, total_cost = ?, checklist_json = ?, photo_before_url = ?, photo_after_url = ?, start_time = ?, end_time = ? WHERE id = ?',
+      [
+        service.service_date || new Date().toISOString().split('T')[0],
+        service.description || '',
+        service.technician_signature || '',
+        service.customer_signature || '',
+        service.service_fee || 0,
+        total_cost,
+        service.checklist_json || null,
+        service.photo_before || null,
+        service.photo_after || null,
+        service.start_time || null,
+        service.end_time || null,
+        id
+      ]
+    );
+    
+    res.json({ success: true, service_record_id: id });
+  } catch (err: any) {
+    console.error('Error in quick-service update endpoint:', err);
+    res.status(500).json({ error: err.message || 'Güncelleme hatası meydana geldi.' });
+  }
+}));
+
+app.delete('/api/quick-service/:id', authMiddleware, asyncHandler(async (req: any, res: any) => {
+  const { id } = req.params;
+  const db = getDb();
+  try {
+    // Revert parts stock
+    const oldParts = await db.all('SELECT part_id, quantity FROM service_parts WHERE service_record_id = ?', id);
+    for (const op of oldParts) {
+      await db.run('UPDATE parts SET stock_quantity = stock_quantity + ? WHERE id = ?', [op.quantity, op.part_id]);
+    }
+    
+    // Delete service_parts
+    await db.run('DELETE FROM service_parts WHERE service_record_id = ?', id);
+    
+    // Delete service_record
+    await db.run('DELETE FROM service_records WHERE id = ?', id);
+    
+    res.json({ success: true, message: 'Servis kaydı başarıyla silindi.' });
+  } catch (err: any) {
+    console.error('Error in quick-service delete endpoint:', err);
+    res.status(500).json({ error: err.message || 'Silme hatası meydana geldi.' });
   }
 }));
 

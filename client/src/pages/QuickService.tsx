@@ -117,6 +117,7 @@ const QuickService = () => {
 
   const [serviceFee, setServiceFee] = useState<string>('');
   const [serviceType, setServiceType] = useState<string>('Genel Bakım');
+  const [editingRecordId, setEditingRecordId] = useState<number | null>(null);
   const [description, setDescription] = useState<string>('');
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<string>(
     new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -221,19 +222,30 @@ const QuickService = () => {
       return;
     }
 
-    if (!techSigRef.current || techSigRef.current.isEmpty()) {
+    let techSig = '';
+    let custSig = '';
+
+    if (techSigRef.current && !techSigRef.current.isEmpty()) {
+      techSig = techSigRef.current.toDataURL();
+    } else if (editingRecordId) {
+      const existing = history.find(r => r.id === editingRecordId);
+      techSig = existing?.technician_signature_url || '';
+    } else {
       toast.error('Lütfen Teknisyen İmzasını atın.');
       return;
     }
-    if (!custSigRef.current || custSigRef.current.isEmpty()) {
+
+    if (custSigRef.current && !custSigRef.current.isEmpty()) {
+      custSig = custSigRef.current.toDataURL();
+    } else if (editingRecordId) {
+      const existing = history.find(r => r.id === editingRecordId);
+      custSig = existing?.customer_signature_url || '';
+    } else {
       toast.error('Lütfen Müşteri İmzasını atın.');
       return;
     }
 
     setSubmitting(true);
-
-    const techSig = techSigRef.current.toDataURL();
-    const custSig = custSigRef.current.toDataURL();
 
     // Get current technician user name
     const storedUser = localStorage.getItem('user');
@@ -312,8 +324,14 @@ ${description}
     };
 
     try {
-      const response = await api.post('/quick-service', postData);
-      toast.success('Hızlı servis kaydı, müşteri ve jeneratör başarıyla oluşturuldu!');
+      let response;
+      if (editingRecordId) {
+        response = await api.put(`/quick-service/${editingRecordId}`, postData);
+        toast.success('Servis kaydı başarıyla güncellendi!');
+      } else {
+        response = await api.post('/quick-service', postData);
+        toast.success('Hızlı servis kaydı, müşteri ve jeneratör başarıyla oluşturuldu!');
+      }
       
       const totalPartsCost = usedParts.reduce((sum, p) => sum + (p.quantity * p.unit_price), 0);
       
@@ -357,6 +375,84 @@ ${description}
       toast.error(errorMsg, { duration: 6000 });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditClick = (record: ServiceRecord) => {
+    setEditingRecordId(record.id);
+    
+    let parsedChecklist: any = {};
+    if (record.checklist_json) {
+      try {
+        parsedChecklist = JSON.parse(record.checklist_json);
+      } catch (e) {}
+    }
+    
+    setCustomerForm({
+      name: record.customer_name || '',
+      phone: record.customer_phone || '',
+      address: record.customer_address || '',
+      customer_type: parsedChecklist.checklist?.customer_type || 'Tüzel Kişi',
+      category: parsedChecklist.checklist?.category || 'Özel'
+    });
+    
+    setGeneratorForm({
+      brand: record.generator_brand || 'AKAN',
+      model: record.generator_model || '',
+      serial_number: record.generator_serial || '',
+      kva: record.generator_kva || '',
+      location: record.generator_location || '',
+      installation_date: new Date().toISOString().split('T')[0],
+      warranty_status: 'Yok',
+      contract_status: 'Yok'
+    });
+    
+    let servType = 'Genel Bakım';
+    if (record.description?.includes('HİZMET TÜRÜ:')) {
+      const match = record.description.match(/HİZMET TÜRÜ:\s*(.*)/);
+      if (match && match[1]) {
+        servType = match[1].split('\n')[0].trim();
+      }
+    }
+    setServiceType(servType);
+    
+    let origDesc = record.description || '';
+    if (record.description?.includes('EK NOTLAR:')) {
+      const parts = record.description.split('EK NOTLAR:');
+      origDesc = parts[parts.length - 1].trim();
+    }
+    setDescription(origDesc);
+    
+    setServiceFee(record.service_fee ? String(record.service_fee) : '');
+    
+    if (parsedChecklist.measurements) {
+      setMeasurements(parsedChecklist.measurements);
+    } else {
+      setMeasurements({
+        battery_group: '', battery_qty: '', charger_alternator: '', charger_device: '', grounding: '',
+        coolant_temp: '', oil_pressure: '', frequency: '', voltage_u: '', current_u: '',
+        voltage_v: '', current_v: '', voltage_w: '', current_w: '', fuel_level_text: '', runtime_hours: ''
+      });
+    }
+    
+    setCustomerAuthorizedName(parsedChecklist.customer_authorized_name || '');
+    setUsedParts(parsedChecklist.used_parts || []);
+    setChecklist(parsedChecklist.checklist || {});
+    
+    setShowFormModal(true);
+  };
+
+  const handleDeleteClick = async (id: number) => {
+    if (!window.confirm('Bu servis kaydını silmek istediğinize emin misiniz?')) {
+      return;
+    }
+    try {
+      await api.delete(`/quick-service/${id}`);
+      toast.success('Servis kaydı başarıyla silindi.');
+      fetchHistory();
+    } catch (err: any) {
+      console.error('Failed to delete service record:', err);
+      toast.error('Kayıt silinirken hata oluştu.');
     }
   };
 
@@ -434,6 +530,7 @@ ${description}
         </div>
         <button
           onClick={() => {
+            setEditingRecordId(null);
             resetForm();
             setShowFormModal(true);
           }}
@@ -498,21 +595,53 @@ ${description}
                     <td style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>
                       {(record.service_fee || 0).toLocaleString('tr-TR')} TL
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button
                         onClick={() => downloadExistingPDF(record)}
                         className="btn btn-secondary"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          borderRadius: '8px',
-                          color: 'var(--primary)'
+                          gap: '4px',
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          color: 'var(--primary)',
+                          marginRight: '6px'
                         }}
                       >
-                        <Download size={14} /> PDF
+                        <Download size={12} /> PDF
+                      </button>
+                      <button
+                        onClick={() => handleEditClick(record)}
+                        className="btn btn-secondary"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          color: 'var(--info)',
+                          marginRight: '6px'
+                        }}
+                      >
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(record.id)}
+                        className="btn btn-secondary"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          color: 'var(--danger)'
+                        }}
+                      >
+                        Sil
                       </button>
                     </td>
                   </tr>
