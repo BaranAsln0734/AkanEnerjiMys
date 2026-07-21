@@ -826,9 +826,28 @@ app.get('/api/diag-logs', asyncHandler(async (req: any, res: any) => {
         const stats = fs.statSync(filePath);
         const stream = fs.readFileSync(filePath, 'utf-8');
         result += `--- OUT LOG (${outFile}, size: ${stats.size}) ---\n`;
-        result += stream.split('\n').slice(-50).join('\n') + '\n';
+        result += stream.split('\n').slice(-50).join('\n') + '\n\n';
       } else {
-        result += 'No out log file found for akanenerji.\n';
+        result += 'No out log file found for akanenerji.\n\n';
+      }
+
+      // 3. Read cvs-backend Logs
+      const cvsErrFile = files.find(f => f.includes('cvs-backend-error') || f.includes('cvs-backend') && f.includes('error'));
+      if (cvsErrFile) {
+        const filePath = path.join(pm2LogDir, cvsErrFile);
+        const stats = fs.statSync(filePath);
+        const stream = fs.readFileSync(filePath, 'utf-8');
+        result += `--- CVS-BACKEND ERROR LOG (${cvsErrFile}, size: ${stats.size}) ---\n`;
+        result += stream.split('\n').slice(-50).join('\n') + '\n\n';
+      }
+
+      const cvsOutFile = files.find(f => f.includes('cvs-backend-out') || f.includes('cvs-backend') && f.includes('out'));
+      if (cvsOutFile) {
+        const filePath = path.join(pm2LogDir, cvsOutFile);
+        const stats = fs.statSync(filePath);
+        const stream = fs.readFileSync(filePath, 'utf-8');
+        result += `--- CVS-BACKEND OUT LOG (${cvsOutFile}, size: ${stats.size}) ---\n`;
+        result += stream.split('\n').slice(-50).join('\n') + '\n';
       }
     } else {
       result += `PM2 log directory not found at: ${pm2LogDir}\n`;
