@@ -695,6 +695,46 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   }
 }));
 
+app.get('/api/diag-db', asyncHandler(async (req: any, res: any) => {
+  const db = getDb();
+  let result = '';
+  try {
+    // 1. Run foreign key check
+    const fkChecks = await db.all('PRAGMA foreign_key_check');
+    result += `--- FOREIGN KEY VIOLATIONS ---\n`;
+    result += JSON.stringify(fkChecks, null, 2) + '\n\n';
+    
+    // 2. Table row counts
+    const tableCounts = [];
+    const tables = ['customers', 'generators', 'service_records', 'parts', 'service_parts', 'appointments'];
+    for (const t of tables) {
+      try {
+        const countRes = await db.get(`SELECT COUNT(*) as count FROM ${t}`);
+        tableCounts.push({ table: t, count: countRes?.count || 0 });
+      } catch (e: any) {
+        tableCounts.push({ table: t, error: e.message });
+      }
+    }
+    result += `--- TABLE COUNTS ---\n`;
+    result += JSON.stringify(tableCounts, null, 2) + '\n\n';
+    
+    // 3. Schema details
+    result += `--- SCHEMA DETAILS ---\n`;
+    for (const t of tables) {
+      try {
+        const schema = await db.all(`PRAGMA table_info(${t})`);
+        result += `Table: ${t}\n` + JSON.stringify(schema, null, 2) + '\n\n';
+      } catch (e: any) {}
+    }
+    
+  } catch (err: any) {
+    result += `Error diagnosing database: ${err.message}\n`;
+  }
+  
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(result);
+}));
+
 app.get('/api/diag-logs', asyncHandler(async (req: any, res: any) => {
   const fs = await import('node:fs');
   const path = await import('node:path');
