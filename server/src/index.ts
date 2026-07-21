@@ -695,6 +695,18 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   }
 }));
 
+app.get('/api/diag-pm2', asyncHandler(async (req: any, res: any) => {
+  const { execSync } = await import('node:child_process');
+  let result = '';
+  try {
+    result += execSync('pm2 list', { encoding: 'utf-8' });
+  } catch (err: any) {
+    result += `Error running pm2: ${err.message}\nStderr: ${err.stderr || ''}`;
+  }
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(result);
+}));
+
 app.get('/api/diag-db', asyncHandler(async (req: any, res: any) => {
   const db = getDb();
   let result = '';
