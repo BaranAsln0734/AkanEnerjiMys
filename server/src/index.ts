@@ -725,7 +725,26 @@ app.get('/api/diag-pm2', asyncHandler(async (req: any, res: any) => {
         result += fs.readFileSync(path.join('/etc/nginx/sites-enabled', f), 'utf-8') + '\n\n';
       }
     } catch (e: any) {
-      result += `Error reading nginx configs: ${e.message}\n`;
+      result += `Error reading nginx configs: ${e.message}\n\n`;
+    }
+
+    result += `--- SERVER .ENV FILE ---\n`;
+    try {
+      const envPath = '/var/www/akanenerji/server/.env';
+      if (fs.existsSync(envPath)) {
+        result += fs.readFileSync(envPath, 'utf-8') + '\n\n';
+      } else {
+        result += 'Server .env file not found.\n\n';
+      }
+    } catch (e: any) {
+      result += `Error reading server env: ${e.message}\n\n`;
+    }
+
+    result += `--- LISTENING PORTS ---\n`;
+    try {
+      result += execSync('ss -tuln', { encoding: 'utf-8' }) + '\n';
+    } catch (e: any) {
+      result += `Error running ss: ${e.message}\n`;
     }
   } catch (err: any) {
     result += `Error running pm2: ${err.message}\nStderr: ${err.stderr || ''}`;
