@@ -601,13 +601,15 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   try {
     const { customer, generator, service } = req.body;
     console.log('Quick-Service payload received:', { customer, generator, service: { ...service, technician_signature: '...', customer_signature: '...' } });
-    
-    // 1. Create customer
     const custResult = await db.run(
       'INSERT INTO customers (name, phone, address, customer_type, category) VALUES (?, ?, ?, ?, ?)',
       [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel']
     );
-    const customerId = custResult.lastID;
+    let customerId = custResult.lastID;
+    if (!customerId) {
+      const row = await db.get('SELECT last_insert_rowid() AS id');
+      customerId = row?.id;
+    }
     console.log('Created customerId:', customerId);
 
     // 2. Create generator
@@ -642,7 +644,11 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
         runtime
       ]
     );
-    const generatorId = genResult.lastID;
+    let generatorId = genResult.lastID;
+    if (!generatorId) {
+      const row = await db.get('SELECT last_insert_rowid() AS id');
+      generatorId = row?.id;
+    }
     console.log('Created generatorId:', generatorId);
 
     // 3. Create service record
@@ -671,7 +677,11 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
         service.end_time || null
       ]
     );
-    const serviceRecordId = srResult.lastID;
+    let serviceRecordId = srResult.lastID;
+    if (!serviceRecordId) {
+      const row = await db.get('SELECT last_insert_rowid() AS id');
+      serviceRecordId = row?.id;
+    }
     console.log('Created serviceRecordId:', serviceRecordId);
 
     // 4. Handle used parts & stock reduction
