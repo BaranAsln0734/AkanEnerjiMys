@@ -113,6 +113,14 @@ const Dashboard = () => {
     }
   });
 
+  const { data: serviceRecords = [] } = useQuery<any[]>({
+    queryKey: ['serviceRecords'],
+    queryFn: async () => {
+      const response = await api.get('/service-records');
+      return response.data;
+    }
+  });
+
   const calculateDaysLeft = (dateString: string | null | undefined): number => {
     if (!dateString) return 9999; // No date set → treat as safe, not urgent
     const parts = dateString.split('T')[0].split('-');
@@ -183,7 +191,41 @@ const Dashboard = () => {
   };
 
   const todayStr = new Date().toLocaleDateString('sv-SE');
-  const completedToday = appointments.filter(a => a.status === 'Tamamlandı' && a.appointment_date === todayStr).slice(0, 5);
+  
+  const appCompleted = appointments
+    .filter(a => a.status === 'Tamamlandı' && a.appointment_date === todayStr)
+    .map(a => ({
+      id: `appointment-${a.id}`,
+      customer_name: a.customer_name,
+      technician_name: a.technician_name || 'Teknisyen',
+      assistant_name: a.assistant_name,
+      type: 'Randevu',
+      description: 'Saha Operasyonu Tamamlandı',
+      time: a.end_time || 'Tamamlandı'
+    }));
+
+  const srCompleted = serviceRecords
+    .filter(sr => sr.service_date === todayStr)
+    .map(sr => {
+      let techName = 'Akan Enerji';
+      if (sr.checklist_json) {
+        try {
+          const parsed = JSON.parse(sr.checklist_json);
+          if (parsed.technician_name) techName = parsed.technician_name;
+        } catch (e) {}
+      }
+      return {
+        id: `service-${sr.id}`,
+        customer_name: sr.customer_name || 'Hızlı Servis Müşterisi',
+        technician_name: techName,
+        assistant_name: '',
+        type: 'Hızlı Servis',
+        description: 'Servis Raporu Kaydedildi',
+        time: sr.end_time || 'Tamamlandı'
+      };
+    });
+
+  const completedToday = [...appCompleted, ...srCompleted].slice(0, 5);
 
   if (isLoading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -391,8 +433,11 @@ const Dashboard = () => {
            </div>
         </div>
 
+        {/* Row 2: Filo Bakım Sağlığı & Anlık İş Akışı */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '35px' }}>
+        
         {/* Fleet Health Chart */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', textAlign: 'center' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', textAlign: 'center', minHeight: '340px' }}>
           <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', fontWeight: '800', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Layers size={20} color="var(--primary)" /> Filo Bakım Sağlığı
           </h3>
@@ -429,89 +474,89 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Recent Activity Card */}
+        <div className="card" style={{ minHeight: '340px', display: 'flex', flexDirection: 'column' }}>
+           <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '18px', fontWeight: '800' }}>Anlık İş Akışı (Bugün)</h3>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', flex: 1 }}>
+              {completedToday.length > 0 ? completedToday.map(a => (
+                <div key={a.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                   <div style={{ background: 'var(--success-light)', padding: '8px', borderRadius: '8px', color: 'var(--success)' }}>
+                      <CheckCircle size={18} />
+                   </div>
+                   <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{a.customer_name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {a.type}: {a.description} | {a.time}
+                      </div>
+                   </div>
+                   <span style={{ fontSize: '11px', color: 'var(--success)', fontWeight: '800', background: 'var(--success-light)', padding: '3px 8px', borderRadius: '12px' }}>
+                     TAMAMLANDI
+                   </span>
+                </div>
+              )) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '13px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+                   <CheckCircle size={36} style={{ opacity: 0.15, alignSelf: 'center', marginBottom: '10px' }} />
+                   Bugün henüz tamamlanan saha operasyonu bulunmuyor.
+                </div>
+              )}
+           </div>
+        </div>
+
       </div>
 
-      {/* Row 3: Financial Overview & Activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-         
-         {/* Financial Overview Card */}
-         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '340px' }}>
+      {/* Row 3: Finansal Göstergeler (Full Width Layout) */}
+      <div style={{ marginBottom: '35px' }}>
+         <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: '260px' }}>
             <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '18px', fontWeight: '800' }}>Finansal Göstergeler</h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', width: '100%', marginBottom: '20px' }}>
-               
-               <div onClick={() => navigate('/customers')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '10px', borderRadius: '50%', color: 'var(--primary)', marginBottom: '8px' }}>
-                     <Users size={20} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+               {/* Left Column: 3 Metric Buttons */}
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                  <div onClick={() => navigate('/customers')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                     <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '10px', borderRadius: '50%', color: 'var(--primary)', marginBottom: '8px' }}>
+                        <Users size={20} />
+                     </div>
+                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Müşteri</div>
+                     <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', marginTop: '4px' }}>{customers.length}</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Müşteri</div>
-                  <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', marginTop: '4px' }}>{customers.length}</div>
-               </div>
 
-               <div onClick={() => navigate('/contracts')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ display: 'inline-flex', background: 'rgba(139, 92, 246, 0.15)', padding: '10px', borderRadius: '50%', color: '#8b5cf6', marginBottom: '8px' }}>
-                     <FileText size={20} />
+                  <div onClick={() => navigate('/contracts')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                     <div style={{ display: 'inline-flex', background: 'rgba(139, 92, 246, 0.15)', padding: '10px', borderRadius: '50%', color: '#8b5cf6', marginBottom: '8px' }}>
+                        <FileText size={20} />
+                     </div>
+                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Sözleşme</div>
+                     <div style={{ fontSize: '24px', fontWeight: '800', color: '#8b5cf6', marginTop: '4px' }}>{contracts.length}</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Sözleşme</div>
-                  <div style={{ fontSize: '24px', fontWeight: '800', color: '#8b5cf6', marginTop: '4px' }}>{contracts.length}</div>
-               </div>
 
-               <div onClick={() => navigate('/quotes')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ display: 'inline-flex', background: 'rgba(245, 158, 11, 0.15)', padding: '10px', borderRadius: '50%', color: '#f59e0b', marginBottom: '8px' }}>
-                     <FileSignature size={20} />
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Teklif</div>
-                  <div style={{ fontSize: '24px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>{stats.totalQuotes}</div>
-               </div>
-
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-               <div className="card" onClick={() => navigate('/contracts')} style={{ cursor: 'pointer', background: 'var(--bg-input)', borderTop: '4px solid #10b981', padding: '16px', textAlign: 'center' }}>
-                  <h4 style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 6px 0' }}>AKTİF SÖZLEŞME HACMİ</h4>
-                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#10b981' }}>
-                     {stats.totalContractValue.toLocaleString('tr-TR')} TL
+                  <div onClick={() => navigate('/quotes')} style={{ cursor: 'pointer', background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                     <div style={{ display: 'inline-flex', background: 'rgba(245, 158, 11, 0.15)', padding: '10px', borderRadius: '50%', color: '#f59e0b', marginBottom: '8px' }}>
+                        <FileSignature size={20} />
+                     </div>
+                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Teklif</div>
+                     <div style={{ fontSize: '24px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>{stats.totalQuotes}</div>
                   </div>
                </div>
 
-               <div className="card" onClick={() => navigate('/quotes')} style={{ cursor: 'pointer', background: 'var(--bg-input)', borderTop: '4px solid #f59e0b', padding: '16px', textAlign: 'center' }}>
-                  <h4 style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 6px 0' }}>ONAYLANAN TEKLİF CİROSU</h4>
-                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#f59e0b' }}>
-                     {stats.approvedQuotesTotal.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} TL
+               {/* Right Column: 2 Revenue Blocks */}
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div className="card" onClick={() => navigate('/contracts')} style={{ cursor: 'pointer', background: 'var(--bg-input)', borderTop: '4px solid #10b981', padding: '16px', textAlign: 'center', margin: 0 }}>
+                     <h4 style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 6px 0' }}>AKTİF SÖZLEŞME HACMİ</h4>
+                     <div style={{ fontSize: '20px', fontWeight: '800', color: '#10b981' }}>
+                        {stats.totalContractValue.toLocaleString('tr-TR')} TL
+                     </div>
+                  </div>
+
+                  <div className="card" onClick={() => navigate('/quotes')} style={{ cursor: 'pointer', background: 'var(--bg-input)', borderTop: '4px solid #f59e0b', padding: '16px', textAlign: 'center', margin: 0 }}>
+                     <h4 style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 6px 0' }}>ONAYLANAN TEKLİF CİROSU</h4>
+                     <div style={{ fontSize: '20px', fontWeight: '800', color: '#f59e0b' }}>
+                        {stats.approvedQuotesTotal.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} TL
+                     </div>
                   </div>
                </div>
-            </div>
-         </div>
-
-         {/* Recent Activity Card */}
-         <div className="card" style={{ minHeight: '340px', display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '18px', fontWeight: '800' }}>Anlık İş Akışı (Bugün)</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', flex: 1 }}>
-               {completedToday.length > 0 ? completedToday.map(a => (
-                 <div key={a.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ background: 'var(--success-light)', padding: '8px', borderRadius: '8px', color: 'var(--success)' }}>
-                       <CheckCircle size={18} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                       <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{a.customer_name}</div>
-                       <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                         Teknisyen: {a.technician_name} {a.assistant_name ? `& ${a.assistant_name}` : ''}
-                       </div>
-                    </div>
-                    <span style={{ fontSize: '11px', color: 'var(--success)', fontWeight: '800', background: 'var(--success-light)', padding: '3px 8px', borderRadius: '12px' }}>
-                      TAMAMLANDI
-                    </span>
-                 </div>
-               )) : (
-                 <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '13px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                    <CheckCircle size={36} style={{ opacity: 0.15, alignSelf: 'center', marginBottom: '10px' }} />
-                    Bugün henüz tamamlanan saha operasyonu bulunmuyor.
-                 </div>
-               )}
             </div>
          </div>
-
       </div>
+
     </div>
   );
 };
