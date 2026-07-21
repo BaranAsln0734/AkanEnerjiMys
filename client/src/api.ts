@@ -1,6 +1,9 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('akanenerji.com')) {
+    return '/api';
+  }
   const customUrl = localStorage.getItem('api_url');
   if (customUrl) return customUrl;
   
