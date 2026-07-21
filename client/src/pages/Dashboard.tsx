@@ -353,7 +353,7 @@ const Dashboard = () => {
         <div className="card" style={{ minHeight: '340px', display: 'flex', flexDirection: 'column' }}>
            <h3 style={{ marginBottom: '20px', color: 'var(--text-main)', fontSize: '18px', fontWeight: '800' }}>Anlık İş Akışı (Bugün)</h3>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', flex: 1 }}>
-              {completedToday.length > 0 ? completedToday.map(a => (
+              {completedToday.length > 0 ? completedToday.map((a: any) => (
                 <div key={a.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
                    <div style={{ background: 'var(--success-light)', padding: '8px', borderRadius: '8px', color: 'var(--success)' }}>
                       <CheckCircle size={18} />

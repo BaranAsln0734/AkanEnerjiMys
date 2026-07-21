@@ -30,10 +30,13 @@ interface ServiceRecord {
   service_fee: number;
   total_cost: number;
   customer_name?: string;
+  customer_phone?: string;
+  customer_address?: string;
   generator_serial?: string;
   generator_brand?: string;
   generator_model?: string;
   generator_kva?: string;
+  generator_location?: string;
   checklist_json?: string;
   technician_signature_url?: string;
   customer_signature_url?: string;
