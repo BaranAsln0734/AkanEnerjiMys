@@ -8,17 +8,14 @@ import Generators from './pages/Generators';
 import GeneratorDetail from './pages/GeneratorDetail';
 import Contracts from './pages/Contracts';
 import TechnicianTasks from './pages/TechnicianTasks';
-import Technicians from './pages/Technicians';
 import MaintenanceProgram from './pages/MaintenanceProgram';
 import PublicGeneratorView from './pages/PublicGeneratorView';
 import CustomerDetail from './pages/CustomerDetail';
-import TechnicianDetail from './pages/TechnicianDetail';
 import Login from './pages/Login';
 import CustomerPortal from './pages/CustomerPortal';
 import Parts from './pages/Parts';
 import Quotes from './pages/Quotes';
 import QuoteDetail from './pages/QuoteDetail';
-import LiveMap from './pages/LiveMap';
 import { Toaster } from 'react-hot-toast';
 import { syncOfflineServices } from './utils/offlineQueue';
 import api from './api';
@@ -198,8 +195,6 @@ function App() {
                       <NavLink to="/quotes" icon={FileSignature}>Teklifler</NavLink>
                       <NavLink to="/contracts" icon={FileText}>Sözleşmeler</NavLink>
                       <NavLink to="/maintenance-program" icon={Calendar}>Yıllık Program</NavLink>
-                      <NavLink to="/technicians" icon={Users}>Saha Ekibi</NavLink>
-                      <NavLink to="/map" icon={MapPin}>Canlı Harita</NavLink>
                       <NavLink to="/parts" icon={Package}>Yedek Parçalar</NavLink>
                     </>
                   )}
@@ -362,15 +357,12 @@ function App() {
                     <Route path="/customers/:id" element={<CustomerDetail />} />
                     <Route path="/generators" element={<Generators />} />
                     <Route path="/generators/:id" element={<GeneratorDetail />} />
-                    <Route path="/technicians" element={<Technicians />} />
-                    <Route path="/technicians/:id" element={<TechnicianDetail />} />
                     <Route path="/maintenance-program" element={<MaintenanceProgram />} />
                     <Route path="/contracts" element={<Contracts />} />
                     <Route path="/parts" element={<Parts />} />
                     <Route path="/quotes" element={<Quotes />} />
                     <Route path="/quotes/:id" element={<QuoteDetail />} />
                     <Route path="/my-tasks" element={<TechnicianTasks />} />
-                    <Route path="/map" element={<LiveMap />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </main>
