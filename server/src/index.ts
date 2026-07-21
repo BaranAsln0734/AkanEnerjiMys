@@ -600,6 +600,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   const db = getDb();
   try {
     const { customer, generator, service } = req.body;
+    console.log('Quick-Service payload received:', { customer, generator, service: { ...service, technician_signature: '...', customer_signature: '...' } });
     
     // 1. Create customer
     const custResult = await db.run(
@@ -607,6 +608,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
       [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel']
     );
     const customerId = custResult.lastID;
+    console.log('Created customerId:', customerId);
 
     // 2. Create generator
     const genHash = crypto.randomBytes(16).toString('hex');
@@ -641,6 +643,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
       ]
     );
     const generatorId = genResult.lastID;
+    console.log('Created generatorId:', generatorId);
 
     // 3. Create service record
     let total_cost = 0;
@@ -669,6 +672,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
       ]
     );
     const serviceRecordId = srResult.lastID;
+    console.log('Created serviceRecordId:', serviceRecordId);
 
     // 4. Handle used parts & stock reduction
     if (service.used_parts && Array.isArray(service.used_parts)) {
@@ -705,15 +709,28 @@ app.get('/api/diag-logs', asyncHandler(async (req: any, res: any) => {
       const files = fs.readdirSync(pm2LogDir);
       result += `Log files found: ${files.join(', ')}\n\n`;
       
+      // 1. Read Error Log
       const errFile = files.find(f => f.includes('akanenerji') && (f.includes('error') || f.includes('err')));
       if (errFile) {
         const filePath = path.join(pm2LogDir, errFile);
         const stats = fs.statSync(filePath);
         const stream = fs.readFileSync(filePath, 'utf-8');
         result += `--- ERROR LOG (${errFile}, size: ${stats.size}) ---\n`;
-        result += stream.split('\n').slice(-50).join('\n');
+        result += stream.split('\n').slice(-50).join('\n') + '\n\n';
       } else {
-        result += 'No error log file found for akanenerji.\n';
+        result += 'No error log file found for akanenerji.\n\n';
+      }
+
+      // 2. Read Out Log (for console.logs)
+      const outFile = files.find(f => f.includes('akanenerji') && (f.includes('out') || f.includes('log') && !f.includes('error') && !f.includes('err')));
+      if (outFile) {
+        const filePath = path.join(pm2LogDir, outFile);
+        const stats = fs.statSync(filePath);
+        const stream = fs.readFileSync(filePath, 'utf-8');
+        result += `--- OUT LOG (${outFile}, size: ${stats.size}) ---\n`;
+        result += stream.split('\n').slice(-50).join('\n') + '\n';
+      } else {
+        result += 'No out log file found for akanenerji.\n';
       }
     } else {
       result += `PM2 log directory not found at: ${pm2LogDir}\n`;
