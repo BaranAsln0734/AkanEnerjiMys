@@ -115,7 +115,7 @@ const QuickService = () => {
     contract_status: 'Yok'
   });
 
-  const [serviceFee, setServiceFee] = useState<number>(0);
+  const [serviceFee, setServiceFee] = useState<string>('');
   const [serviceType, setServiceType] = useState<string>('Genel Bakım');
   const [description, setDescription] = useState<string>('');
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<string>(
@@ -275,7 +275,7 @@ ${checklistSummary}
 PARAMETRELER & ÖLÇÜMLER:
 ${measurementsSummary}
 
-İşçilik: ${serviceFee} TL
+İşçilik: ${serviceFee || '0'} TL
 
 EK NOTLAR:
 ${description}
@@ -362,7 +362,7 @@ ${description}
   const resetForm = () => {
     setCustomerForm({ name: '', phone: '', address: '', customer_type: 'Tüzel Kişi', category: 'Özel' });
     setGeneratorForm({ brand: 'AKAN', model: '', serial_number: '', kva: '', location: '', installation_date: new Date().toISOString().split('T')[0], warranty_status: 'Yok', contract_status: 'Yok' });
-    setServiceFee(0);
+    setServiceFee('');
     setServiceType('Genel Bakım');
     setDescription('');
     setMeasurements({
@@ -887,7 +887,7 @@ ${description}
                         type="number" 
                         min={0} 
                         value={serviceFee} 
-                        onChange={e => setServiceFee(Number(e.target.value) || 0)} 
+                        onChange={e => setServiceFee(e.target.value)} 
                       />
                     </div>
 

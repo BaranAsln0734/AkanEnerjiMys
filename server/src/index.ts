@@ -608,7 +608,6 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   const customerId = custResult.lastID;
 
   // 2. Create generator
-  const crypto = require('crypto');
   const genHash = crypto.randomBytes(16).toString('hex');
   
   // Parse runtime hours from service measurements if not provided directly
