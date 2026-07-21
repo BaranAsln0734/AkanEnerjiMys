@@ -312,7 +312,7 @@ ${description}
     };
 
     try {
-      const response = await api.post('/api/quick-service', postData);
+      const response = await api.post('/quick-service', postData);
       toast.success('Hızlı servis kaydı, müşteri ve jeneratör başarıyla oluşturuldu!');
       
       const totalPartsCost = usedParts.reduce((sum, p) => sum + (p.quantity * p.unit_price), 0);
