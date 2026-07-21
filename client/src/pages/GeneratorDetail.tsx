@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import api from '../api';
 import SignatureCanvas from 'react-signature-canvas';
@@ -244,11 +244,25 @@ const GeneratorDetail = () => {
     }
   };
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     fetchGenerator();
     fetchParts();
     api.get('/customers').then(res => setCustomers(res.data)).catch(err => console.error('Error fetching customers:', err));
   }, [id]);
+
+  useEffect(() => {
+    if (searchParams.get('startService') === 'true' && gen) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      setServiceData(prev => ({ ...prev, start_time: timeStr }));
+      setShowServiceForm(true);
+      setTimeout(() => {
+        serviceFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [searchParams, gen]);
 
   useEffect(() => {
     if (showPlanForm && planFormRef.current) {

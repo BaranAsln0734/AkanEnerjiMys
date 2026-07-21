@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Zap, AlertCircle, Bell, Package, BookOpen, Truck, Calendar, LogOut, Shield, FileText, ClipboardList, Moon, Sun, FileSignature, MapPin } from 'lucide-react';
+import { LayoutDashboard, Users, Zap, AlertCircle, Bell, Package, BookOpen, Truck, Calendar, LogOut, Shield, FileText, ClipboardList, Moon, Sun, FileSignature, MapPin, ClipboardCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
@@ -16,6 +16,7 @@ import CustomerPortal from './pages/CustomerPortal';
 import Parts from './pages/Parts';
 import Quotes from './pages/Quotes';
 import QuoteDetail from './pages/QuoteDetail';
+import QuickService from './pages/QuickService';
 import { Toaster } from 'react-hot-toast';
 import { syncOfflineServices } from './utils/offlineQueue';
 import api from './api';
@@ -190,6 +191,7 @@ function App() {
                   {user.role === 'admin' && (
                     <>
                       <NavLink to="/" icon={LayoutDashboard}>Panel</NavLink>
+                      <NavLink to="/quick-service" icon={ClipboardCheck}>Hızlı Servis</NavLink>
                       <NavLink to="/customers" icon={Users}>Müşteriler</NavLink>
                       <NavLink to="/generators" icon={Zap}>Jeneratörler</NavLink>
                       <NavLink to="/quotes" icon={FileSignature}>Teklifler</NavLink>
@@ -357,6 +359,7 @@ function App() {
                     <Route path="/customers/:id" element={<CustomerDetail />} />
                     <Route path="/generators" element={<Generators />} />
                     <Route path="/generators/:id" element={<GeneratorDetail />} />
+                    <Route path="/quick-service" element={<QuickService />} />
                     <Route path="/maintenance-program" element={<MaintenanceProgram />} />
                     <Route path="/contracts" element={<Contracts />} />
                     <Route path="/parts" element={<Parts />} />
