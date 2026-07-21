@@ -353,7 +353,8 @@ ${description}
       fetchHistory();
     } catch (err: any) {
       console.error('Quick service submission error:', err);
-      toast.error('Servis kaydı oluşturulurken hata meydana geldi.');
+      const errorMsg = err.response?.data?.error || 'Servis kaydı oluşturulurken hata meydana geldi.';
+      toast.error(errorMsg, { duration: 6000 });
     } finally {
       setSubmitting(false);
     }

@@ -597,93 +597,98 @@ app.post('/api/service-records', authMiddleware, asyncHandler(async (req, res) =
 }));
 
 app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res: any) => {
-  const { customer, generator, service } = req.body;
   const db = getDb();
-  
-  // 1. Create customer
-  const custResult = await db.run(
-    'INSERT INTO customers (name, phone, address, customer_type, category) VALUES (?, ?, ?, ?, ?)',
-    [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel']
-  );
-  const customerId = custResult.lastID;
+  try {
+    const { customer, generator, service } = req.body;
+    
+    // 1. Create customer
+    const custResult = await db.run(
+      'INSERT INTO customers (name, phone, address, customer_type, category) VALUES (?, ?, ?, ?, ?)',
+      [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel']
+    );
+    const customerId = custResult.lastID;
 
-  // 2. Create generator
-  const genHash = crypto.randomBytes(16).toString('hex');
-  
-  // Parse runtime hours from service measurements if not provided directly
-  let runtime = generator.runtime_hours || '';
-  if (service.checklist_json) {
-    try {
-      const parsed = JSON.parse(service.checklist_json);
-      if (parsed.measurements?.runtime_hours) {
-        runtime = parsed.measurements.runtime_hours;
+    // 2. Create generator
+    const genHash = crypto.randomBytes(16).toString('hex');
+    
+    // Parse runtime hours from service measurements if not provided directly
+    let runtime = generator.runtime_hours || '';
+    if (service.checklist_json) {
+      try {
+        const parsed = JSON.parse(service.checklist_json);
+        if (parsed.measurements?.runtime_hours) {
+          runtime = parsed.measurements.runtime_hours;
+        }
+      } catch (e) {}
+    }
+
+    const genResult = await db.run(
+      'INSERT INTO generators (customer_id, serial_number, model, brand, kva, installation_date, next_maintenance_date, warranty_status, contract_status, qr_code_hash, location, address, runtime_hours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        customerId,
+        generator.serial_number,
+        generator.model,
+        generator.brand || '',
+        generator.kva || '',
+        generator.installation_date || new Date().toISOString().split('T')[0],
+        service.next_maintenance_date || new Date().toISOString().split('T')[0],
+        generator.warranty_status || 'Yok',
+        generator.contract_status || 'Yok',
+        genHash,
+        generator.location || '',
+        generator.address || customer.address,
+        runtime
+      ]
+    );
+    const generatorId = genResult.lastID;
+
+    // 3. Create service record
+    let total_cost = 0;
+    if (service.used_parts && Array.isArray(service.used_parts)) {
+      for (const part of service.used_parts) {
+        const partData = await db.get('SELECT unit_price FROM parts WHERE id = ?', part.id);
+        total_cost += (partData?.unit_price || 0) * part.quantity;
       }
-    } catch (e) {}
-  }
-
-  const genResult = await db.run(
-    'INSERT INTO generators (customer_id, serial_number, model, brand, kva, installation_date, next_maintenance_date, warranty_status, contract_status, qr_code_hash, location, address, runtime_hours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [
-      customerId,
-      generator.serial_number,
-      generator.model,
-      generator.brand || '',
-      generator.kva || '',
-      generator.installation_date || new Date().toISOString().split('T')[0],
-      service.next_maintenance_date || new Date().toISOString().split('T')[0],
-      generator.warranty_status || 'Yok',
-      generator.contract_status || 'Yok',
-      genHash,
-      generator.location || '',
-      generator.address || customer.address,
-      runtime
-    ]
-  );
-  const generatorId = genResult.lastID;
-
-  // 3. Create service record
-  let total_cost = 0;
-  if (service.used_parts && Array.isArray(service.used_parts)) {
-    for (const part of service.used_parts) {
-      const partData = await db.get('SELECT unit_price FROM parts WHERE id = ?', part.id);
-      total_cost += (partData?.unit_price || 0) * part.quantity;
     }
-  }
 
-  const srResult = await db.run(
-    'INSERT INTO service_records (generator_id, service_date, description, technician_signature_url, customer_signature_url, service_fee, total_cost, checklist_json, photo_before_url, photo_after_url, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [
-      generatorId,
-      service.service_date || new Date().toISOString().split('T')[0],
-      service.description || '',
-      service.technician_signature || '',
-      service.customer_signature || '',
-      service.service_fee || 0,
-      total_cost,
-      service.checklist_json || null,
-      service.photo_before || null,
-      service.photo_after || null,
-      service.start_time || null,
-      service.end_time || null
-    ]
-  );
-  const serviceRecordId = srResult.lastID;
+    const srResult = await db.run(
+      'INSERT INTO service_records (generator_id, service_date, description, technician_signature_url, customer_signature_url, service_fee, total_cost, checklist_json, photo_before_url, photo_after_url, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        generatorId,
+        service.service_date || new Date().toISOString().split('T')[0],
+        service.description || '',
+        service.technician_signature || '',
+        service.customer_signature || '',
+        service.service_fee || 0,
+        total_cost,
+        service.checklist_json || null,
+        service.photo_before || null,
+        service.photo_after || null,
+        service.start_time || null,
+        service.end_time || null
+      ]
+    );
+    const serviceRecordId = srResult.lastID;
 
-  // 4. Handle used parts & stock reduction
-  if (service.used_parts && Array.isArray(service.used_parts)) {
-    for (const part of service.used_parts) {
-      await db.run(
-        'INSERT INTO service_parts (service_record_id, part_id, quantity) VALUES (?, ?, ?)',
-        [serviceRecordId, part.id, part.quantity]
-      );
-      await db.run(
-        'UPDATE parts SET stock_quantity = stock_quantity - ? WHERE id = ?',
-        [part.quantity, part.id]
-      );
+    // 4. Handle used parts & stock reduction
+    if (service.used_parts && Array.isArray(service.used_parts)) {
+      for (const part of service.used_parts) {
+        await db.run(
+          'INSERT INTO service_parts (service_record_id, part_id, quantity) VALUES (?, ?, ?)',
+          [serviceRecordId, part.id, part.quantity]
+        );
+        await db.run(
+          'UPDATE parts SET stock_quantity = stock_quantity - ? WHERE id = ?',
+          [part.quantity, part.id]
+        );
+      }
     }
-  }
 
-  res.json({ success: true, customer_id: customerId, generator_id: generatorId, service_record_id: serviceRecordId });
+    res.json({ success: true, customer_id: customerId, generator_id: generatorId, service_record_id: serviceRecordId });
+  } catch (err: any) {
+    console.error('Error in quick-service endpoint:', err);
+    res.status(500).json({ error: err.message || 'Veri tabanı kayıt hatası meydana geldi.' });
+  }
 }));
 
 // Parts / Inventory
