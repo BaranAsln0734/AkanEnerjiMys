@@ -64,8 +64,17 @@ const asyncHandler = (fn: (req: any, res: any, next: any) => Promise<any> | any)
 };
 
 // Initialize Database
-initDb().then(() => {
+initDb().then(async () => {
   console.log('Database initialized');
+  const db = getDb();
+  try {
+    await db.run('ALTER TABLE customers ADD COLUMN is_quick_service INTEGER DEFAULT 0');
+    console.log('Migrated customers table: added is_quick_service');
+  } catch (e) {}
+  try {
+    await db.run('ALTER TABLE generators ADD COLUMN is_quick_service INTEGER DEFAULT 0');
+    console.log('Migrated generators table: added is_quick_service');
+  } catch (e) {}
 }).catch(err => {
   console.error('Failed to initialize database', err);
 });
@@ -129,7 +138,7 @@ app.post('/api/auth/register', authMiddleware, adminOnly, asyncHandler(async (re
 // Customers
 app.get('/api/customers', authMiddleware, asyncHandler(async (req, res) => {
   const db = getDb();
-  const customers = await db.all('SELECT * FROM customers');
+  const customers = await db.all('SELECT * FROM customers WHERE is_quick_service = 0 OR is_quick_service IS NULL');
   res.json(customers);
 }));
 
@@ -269,11 +278,12 @@ app.get('/api/generators', authMiddleware, asyncHandler(async (req, res) => {
     SELECT g.*, c.name as customer_name
     FROM generators g 
     LEFT JOIN customers c ON g.customer_id = c.id
+    WHERE (g.is_quick_service = 0 OR g.is_quick_service IS NULL)
   `;
   
   const params: any[] = [];
   if (req.user.role === 'customer') {
-    query += ' WHERE g.customer_id = ?';
+    query += ' AND g.customer_id = ?';
     params.push(req.user.customer_id);
   }
   
@@ -614,7 +624,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
     const { customer, generator, service } = req.body;
     console.log('Quick-Service payload received:', { customer, generator, service: { ...service, technician_signature: '...', customer_signature: '...' } });
     const custResult = await db.run(
-      'INSERT INTO customers (name, phone, address, customer_type, category) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO customers (name, phone, address, customer_type, category, is_quick_service) VALUES (?, ?, ?, ?, ?, 1)',
       [customer.name, customer.phone, customer.address, customer.customer_type || 'Tüzel Kişi', customer.category || 'Özel']
     );
     let customerId = custResult.lastID;
@@ -639,7 +649,7 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
     }
 
     const genResult = await db.run(
-      'INSERT INTO generators (customer_id, serial_number, model, brand, kva, installation_date, next_maintenance_date, warranty_status, contract_status, qr_code_hash, location, address, runtime_hours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO generators (customer_id, serial_number, model, brand, kva, installation_date, next_maintenance_date, warranty_status, contract_status, qr_code_hash, location, address, runtime_hours, is_quick_service) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)',
       [
         customerId,
         generator.serial_number,
