@@ -200,7 +200,7 @@ const Dashboard = () => {
         padding: '30px 40px',
         color: '#ffffff',
         marginBottom: '35px',
-        boxShadow: '0 10px 30px -5px rgba(37, 99, 235, 0.25)',
+        boxShadow: '0 10px 30px -5px rgba(229, 169, 0, 0.25)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -208,7 +208,7 @@ const Dashboard = () => {
         gap: '20px'
       }}>
         <div>
-          <h2 style={{ fontSize: '32px', fontWeight: '800', margin: 0, color: '#ffffff' }}>Cvspower Yönetim Paneli</h2>
+          <h2 style={{ fontSize: '32px', fontWeight: '800', margin: 0, color: '#ffffff' }}>Akan Enerji Yönetim Paneli</h2>
           <p style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '6px 0 0', fontSize: '15px' }}>
             Jeneratör filosu, sözleşmeler ve saha ekiplerinin gerçek zamanlı operasyon izleme merkezi.
           </p>

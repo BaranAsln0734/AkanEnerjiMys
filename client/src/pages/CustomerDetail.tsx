@@ -200,7 +200,7 @@ const CustomerDetail = () => {
                       <input 
                          type="text" 
                          required 
-                         placeholder="örn: cvs_musteri1" 
+                         placeholder="örn: akn_musteri1" 
                          value={username} 
                          onChange={e => setUsername(e.target.value)} 
                          style={{ padding: '8px', fontSize: '13px' }}
