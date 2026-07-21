@@ -113,14 +113,6 @@ const Dashboard = () => {
     }
   });
 
-  const { data: serviceRecords = [] } = useQuery<any[]>({
-    queryKey: ['serviceRecords'],
-    queryFn: async () => {
-      const response = await api.get('/service-records');
-      return response.data;
-    }
-  });
-
   const calculateDaysLeft = (dateString: string | null | undefined): number => {
     if (!dateString) return 9999; // No date set → treat as safe, not urgent
     const parts = dateString.split('T')[0].split('-');
@@ -191,41 +183,7 @@ const Dashboard = () => {
   };
 
   const todayStr = new Date().toLocaleDateString('sv-SE');
-  
-  const appCompleted = appointments
-    .filter(a => a.status === 'Tamamlandı' && a.appointment_date === todayStr)
-    .map(a => ({
-      id: `appointment-${a.id}`,
-      customer_name: a.customer_name,
-      technician_name: a.technician_name || 'Teknisyen',
-      assistant_name: a.assistant_name,
-      type: 'Randevu',
-      description: 'Saha Operasyonu Tamamlandı',
-      time: a.end_time || 'Tamamlandı'
-    }));
-
-  const srCompleted = serviceRecords
-    .filter(sr => sr.service_date === todayStr)
-    .map(sr => {
-      let techName = 'Akan Enerji';
-      if (sr.checklist_json) {
-        try {
-          const parsed = JSON.parse(sr.checklist_json);
-          if (parsed.technician_name) techName = parsed.technician_name;
-        } catch (e) {}
-      }
-      return {
-        id: `service-${sr.id}`,
-        customer_name: sr.customer_name || 'Hızlı Servis Müşterisi',
-        technician_name: techName,
-        assistant_name: '',
-        type: 'Hızlı Servis',
-        description: 'Servis Raporu Kaydedildi',
-        time: sr.end_time || 'Tamamlandı'
-      };
-    });
-
-  const completedToday = [...appCompleted, ...srCompleted].slice(0, 5);
+  const completedToday = appointments.filter(a => a.status === 'Tamamlandı' && a.appointment_date === todayStr).slice(0, 5);
 
   if (isLoading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -350,90 +308,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-      </div>
-
-      {/* Main Body Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px', marginBottom: '35px' }}>
-        
-        {/* Field Operation Status */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-           <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-             <Activity size={20} color="var(--primary)" /> Saha Operasyon Durumu
-           </h3>
-           <div className="table-responsive" style={{ flex: 1 }}>
-              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                 <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
-                       <th style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>TEKNİSYEN</th>
-                       <th style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>DURUM</th>
-                       <th style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>SON KONUM / BUGÜNKÜ İŞ</th>
-                       <th style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center' }}>AKSİYON</th>
-                    </tr>
-                 </thead>
-                 <tbody>
-                    {technicians.map(tech => {
-                      const activeJob = appointments.find(a => (a.technician_name === tech.name || a.assistant_name === tech.name) && a.status === 'İşlemde');
-                      const completedCount = appointments.filter(a => 
-                        (a.technician_name === tech.name || a.assistant_name === tech.name) && 
-                        a.status === 'Tamamlandı' &&
-                        a.appointment_date === todayStr
-                      ).length;
-                      const addr = activeJob?.generator_address || activeJob?.customer_address;
-                      
-                      return (
-                        <tr key={tech.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                           <td style={{ padding: '16px', fontWeight: '700', color: 'var(--text-main)' }}>{tech.name}</td>
-                           <td style={{ padding: '16px' }}>
-                              {activeJob ? (
-                                <span style={{
-                                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                                  background: 'rgba(245, 158, 11, 0.1)', color: '#b45309',
-                                  fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '20px'
-                                }}>
-                                  <span style={{ width: '8px', height: '8px', background: '#f59e0b', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 8px #f59e0b' }} />
-                                  SAHADA ÇALIŞIYOR
-                                </span>
-                              ) : (
-                                <span style={{
-                                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                                  background: 'rgba(16, 185, 129, 0.1)', color: '#065f46',
-                                  fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '20px'
-                                }}>
-                                  <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
-                                  BOŞTA / HAZIR
-                                </span>
-                              )}
-                           </td>
-                           <td style={{ padding: '16px', fontSize: '13px' }}>
-                              {activeJob ? (
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                   <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>📍 {activeJob.customer_name}</span>
-                                   {activeJob.assistant_name && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Yardımcı: {activeJob.assistant_name}</span>}
-                                </div>
-                              ) : (
-                                <span style={{ color: 'var(--text-muted)' }}>Bugün {completedCount} iş tamamladı.</span>
-                              )}
-                           </td>
-                           <td style={{ padding: '16px', textAlign: 'center' }}>
-                              {activeJob && addr ? (
-                                <button 
-                                  onClick={() => openInMap(addr)} 
-                                  className="btn btn-secondary" 
-                                  style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                                >
-                                   <Navigation size={13}/> Harita
-                                </button>
-                              ) : '-'}
-                           </td>
-                        </tr>
-                      );
-                    })}
-                 </tbody>
-              </table>
-           </div>
-        </div>
-
-        {/* Row 2: Filo Bakım Sağlığı & Anlık İş Akışı */}
+      </div>      {/* Row 2: Filo Bakım Sağlığı & Anlık İş Akışı */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '35px' }}>
         
         {/* Fleet Health Chart */}
@@ -556,7 +431,6 @@ const Dashboard = () => {
             </div>
          </div>
       </div>
-
     </div>
   );
 };
