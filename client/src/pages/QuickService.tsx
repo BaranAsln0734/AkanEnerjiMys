@@ -39,12 +39,61 @@ interface ServiceRecord {
   customer_signature_url?: string;
 }
 
+const SOL_KONTROLLER = [
+  "Yağ Seviyesi", "Su Seviyesi ve Katkılar", "Yakıt Seviyesi", "Turbo Kontrolü",
+  "Kutup Başları ve Kabloları", "Kayış Gerginlikleri", "Alternatör Kontrolü",
+  "Radyatör Kontrolü", "Egzoz Sistemi", "Havalandırma Sistemi"
+];
+
+const SAG_KONTROLLER = [
+  "Blok Su Isıtıcı ve Hortumları", "Sirkülasyon ve Devirdaim Kontrolü",
+  "Filtrelerin Kontrolü", "Marş Motoru Kontrolü", "Güç ve Kumanda Devresi Kontrolü",
+  "Pompa - Enjektör - Yakıt Yolu - Solenoid", "Kontrol Panosu", "Kontrol Cihazı",
+  "Göstergeler", "Transfer Panosu"
+];
+
 const QuickService = () => {
   const [history, setHistory] = useState<ServiceRecord[]>([]);
   const [parts, setParts] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showFormModal, setShowFormModal] = useState<boolean>(false);
+  const [checklist, setChecklist] = useState<Record<string, 'ok' | 'comment' | 'na'>>({});
+
+  const renderChecklistItem = (item: string) => {
+    const value = checklist[item] || 'ok';
+    const setStatus = (status: 'ok' | 'comment' | 'na') => {
+      setChecklist(prev => ({ ...prev, [item]: status }));
+    };
+    return (
+      <div key={item} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px', background: 'var(--bg-input)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+        <span style={{ fontSize: '12.5px', fontWeight: 'bold', color: 'var(--text-main)' }}>{item}</span>
+        <div style={{ display: 'flex', gap: '5px' }}>
+          <button
+            type="button"
+            onClick={() => setStatus('ok')}
+            style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: value === 'ok' ? '#d1fae5' : 'var(--bg-main)', color: value === 'ok' ? '#065f46' : 'var(--text-muted)', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            ✓
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatus('comment')}
+            style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: value === 'comment' ? '#fef3c7' : 'var(--bg-main)', color: value === 'comment' ? '#92400e' : 'var(--text-muted)', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            O
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatus('na')}
+            style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: value === 'na' ? '#fee2e2' : 'var(--bg-main)', color: value === 'na' ? '#991b1b' : 'var(--text-muted)', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            X
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   // Form states
   const [customerForm, setCustomerForm] = useState({
@@ -190,25 +239,17 @@ const QuickService = () => {
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
     const techName = currentUser ? currentUser.name : 'Akan Enerji';
 
-    // Checklist default mapped to ok
-    const SOL_KONTROLLER = [
-      "Yağ Seviyesi", "Su Seviyesi ve Katkılar", "Yakıt Seviyesi", "Turbo Kontrolü",
-      "Kutup Başları ve Kabloları", "Kayış Gerginlikleri", "Alternatör Kontrolü",
-      "Radyatör Kontrolü", "Egzoz Sistemi", "Havalandırma Sistemi"
-    ];
-    const SAG_KONTROLLER = [
-      "Blok Su Isıtıcı ve Hortumları", "Sirkülasyon ve Devirdaim Kontrolü",
-      "Filtrelerin Kontrolü", "Marş Motoru Kontrolü", "Güç ve Kumanda Devresi Kontrolü",
-      "Pompa - Enjektör - Yakıt Yolu - Solenoid", "Kontrol Panosu", "Kontrol Cihazı",
-      "Göstergeler", "Transfer Panosu"
-    ];
     const checklistItems = [...SOL_KONTROLLER, ...SAG_KONTROLLER];
     const fullChecklist: Record<string, 'ok' | 'comment' | 'na'> = {};
     checklistItems.forEach(item => {
-      fullChecklist[item] = 'ok';
+      fullChecklist[item] = checklist[item] || 'ok';
     });
 
-    const checklistSummary = checklistItems.map(item => `[OK] ${item}`).join('\n');
+    const checklistSummary = checklistItems.map(item => {
+      const status = checklist[item] || 'ok';
+      const marker = status === 'ok' ? 'OK' : (status === 'comment' ? 'O' : 'X');
+      return `[${marker}] ${item}`;
+    }).join('\n');
     const measurementsSummary = `
 Akü Grubu: ${measurements.battery_group || '-'}
 Akü Adedi: ${measurements.battery_qty || '-'}
@@ -630,10 +671,31 @@ ${description}
 
                 </div>
 
-                {/* SECTION 2: MEASUREMENTS (ÖLÇÜMLER) */}
+                {/* SECTION 2: GENERAL AND ENGINE CONTROLLER CHECKLIST */}
+                <div style={{ background: 'rgba(229, 169, 0, 0.02)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', marginBottom: '15px' }}>
+                    3. Genel Kontroller & Motor Kumanda Kontrolleri
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '25px' }}>
+                    <div>
+                      <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '12px', fontSize: '13px', fontWeight: 'bold' }}>Genel Kontroller</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {SOL_KONTROLLER.map(item => renderChecklistItem(item))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '12px', fontSize: '13px', fontWeight: 'bold' }}>Motor & Kumanda</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {SAG_KONTROLLER.map(item => renderChecklistItem(item))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: MEASUREMENTS (ÖLÇÜMLER) */}
                 <div style={{ background: 'var(--bg-hover)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', marginBottom: '15px' }}>
-                    3. Teknik Ölçümler & Parametreler
+                    4. Teknik Ölçümler & Parametreler
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                     <div className="form-group" style={{ margin: 0 }}>
@@ -708,7 +770,7 @@ ${description}
                 {/* SECTION 3: SPARE PARTS (YEDEK PARÇALAR) */}
                 <div style={{ background: 'rgba(229, 169, 0, 0.02)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', marginBottom: '15px' }}>
-                    4. Kullanılan Yedek Parçalar
+                    5. Kullanılan Yedek Parçalar
                   </h3>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: '240px' }} className="form-group">
@@ -792,7 +854,7 @@ ${description}
                 {/* SECTION 4: SERVICE DETAILS & NOTATION */}
                 <div style={{ background: 'var(--bg-hover)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', marginBottom: '15px' }}>
-                    5. Servis Ücreti, Notlar & İmzalar
+                    6. Servis Ücreti, Notlar & İmzalar
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                     
