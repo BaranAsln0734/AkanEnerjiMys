@@ -744,7 +744,22 @@ app.get('/api/diag-pm2', asyncHandler(async (req: any, res: any) => {
     try {
       result += execSync('ss -tuln', { encoding: 'utf-8' }) + '\n';
     } catch (e: any) {
-      result += `Error running ss: ${e.message}\n`;
+      result += `Error running ss: ${e.message}\n\n`;
+    }
+
+    result += `--- NGINX SYSTEM ERROR LOG ---\n`;
+    try {
+      const nginxErrPath = '/var/log/nginx/error.log';
+      if (fs.existsSync(nginxErrPath)) {
+        const stats = fs.statSync(nginxErrPath);
+        const stream = fs.readFileSync(nginxErrPath, 'utf-8');
+        result += `Nginx error log size: ${stats.size}\n`;
+        result += stream.split('\n').slice(-50).join('\n') + '\n';
+      } else {
+        result += 'Nginx error log file not found.\n';
+      }
+    } catch (e: any) {
+      result += `Error reading nginx logs: ${e.message}\n`;
     }
   } catch (err: any) {
     result += `Error running pm2: ${err.message}\nStderr: ${err.stderr || ''}`;
