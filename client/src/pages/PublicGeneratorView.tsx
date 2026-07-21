@@ -160,7 +160,7 @@ const PublicGeneratorView = () => {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '30px', opacity: 0.5, fontSize: '11px' }}>
-          © 2026 Cvspower Dijital Servis Takip Sistemi
+          © 2026 Akan Enerji Dijital Servis Takip Sistemi
         </div>
       </div>
     </div>

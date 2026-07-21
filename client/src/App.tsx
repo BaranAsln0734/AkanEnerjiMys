@@ -236,7 +236,7 @@ function App() {
                     <LogOut size={18} /> Oturumu Kapat
                   </button>
                   <div style={{ marginTop: '20px', fontSize: '11px', opacity: 0.3, textAlign: 'center' }}>
-                    © 2026 Cvspower v1.3
+                    © 2026 Akan Enerji v1.3
                   </div>
                 </div>
               </nav>

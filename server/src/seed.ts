@@ -35,15 +35,15 @@ async function seed() {
   // Add Generators
   // 1. Normal (Green) - 45 days left
   await db.run('INSERT INTO generators (customer_id, serial_number, model, installation_date, next_maintenance_date, qr_code_hash) VALUES (?, ?, ?, ?, ?, ?)',
-    [1, 'CVS-1001', 'CVS 50kVA', '2025-01-01', addDays(45), crypto.randomBytes(8).toString('hex')]);
+    [1, 'AKN-1001', 'AKN 50kVA', '2025-01-01', addDays(45), crypto.randomBytes(8).toString('hex')]);
 
   // 2. Warning (Yellow) - 20 days left
   await db.run('INSERT INTO generators (customer_id, serial_number, model, installation_date, next_maintenance_date, qr_code_hash) VALUES (?, ?, ?, ?, ?, ?)',
-    [2, 'CVS-2002', 'CVS 100kVA', '2024-12-15', addDays(20), crypto.randomBytes(8).toString('hex')]);
+    [2, 'AKN-2002', 'AKN 100kVA', '2024-12-15', addDays(20), crypto.randomBytes(8).toString('hex')]);
 
   // 3. Critical (Red) - 5 days left
   await db.run('INSERT INTO generators (customer_id, serial_number, model, installation_date, next_maintenance_date, qr_code_hash) VALUES (?, ?, ?, ?, ?, ?)',
-    [3, 'CVS-3003', 'CVS 250kVA', '2024-11-20', addDays(5), crypto.randomBytes(8).toString('hex')]);
+    [3, 'AKN-3003', 'AKN 250kVA', '2024-11-20', addDays(5), crypto.randomBytes(8).toString('hex')]);
 
   console.log('Seeding completed.');
   await db.close();

@@ -1,12 +1,7 @@
 {
-  "short_name": "CVSPower",
-  "name": "CVSPower Jeneratör Müşteri Yönetim Sistemi",
+  "short_name": "AkanEnerji",
+  "name": "Akan Enerji Jeneratör Müşteri Yönetim Sistemi",
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
-    },
     {
       "src": "/logo-2025.png",
       "type": "image/png",

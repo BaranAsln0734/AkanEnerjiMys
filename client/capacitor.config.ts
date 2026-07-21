@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.cvspower.app',
-  appName: 'CVSPower',
+  appId: 'com.akanenerji.app',
+  appName: 'AkanEnerji',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

@@ -377,7 +377,7 @@ async function geocodeAddress(address: string, region: string): Promise<{ latitu
     try {
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
       const response = await fetch(url, {
-        headers: { 'User-Agent': 'CVSPower-Fleet-Manager-Geocoder/1.0' }
+        headers: { 'User-Agent': 'AkanEnerji-Fleet-Manager-Geocoder/1.0' }
       });
       if (response.ok) {
         const data: any = await response.json();
@@ -1479,12 +1479,12 @@ app.post('/api/quotes/:id/send-email', authMiddleware, asyncHandler(async (req: 
     .replace(/^data:.*?;base64,/, '');
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || `"CVS POWER Teklif Departmanı" <${process.env.SMTP_USER || 'info@cvspower.com'}>`,
+    from: process.env.SMTP_FROM || `"Akan Enerji Teklif Departmanı" <${process.env.SMTP_USER || 'info@akanenerji.com'}>`,
     to: targetEmail,
-    subject: `CVS POWER - Teklif Belgesi (#${quote.quote_number})`,
+    subject: `Akan Enerji - Teklif Belgesi (#${quote.quote_number})`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
-        <h2 style="color: #2563eb; margin-bottom: 10px;">CVS POWER Teklif Belgesi</h2>
+        <h2 style="color: #2563eb; margin-bottom: 10px;">Akan Enerji Teklif Belgesi</h2>
         <p>Sayın <strong>${quote.customer_name}</strong>,</p>
         <p>Talebiniz doğrultusunda hazırlanan <strong>#${quote.quote_number}</strong> numaralı teklif belgesi ekte PDF olarak bilgilerinize sunulmuştur.</p>
         <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
@@ -1494,7 +1494,7 @@ app.post('/api/quotes/:id/send-email', authMiddleware, asyncHandler(async (req: 
         </div>
         <p style="color: #64748b; font-size: 13px;">Sorularınız ve onayınız için bu e-postaya yanıt verebilir veya bizimle iletişime geçebilirsiniz.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-        <p style="font-size: 11px; color: #94a3b8;">CVS POWER Jeneratör & Enerji Sistemleri</p>
+        <p style="font-size: 11px; color: #94a3b8;">Akan Enerji Jeneratör & Enerji Sistemleri</p>
       </div>
     `,
     attachments: base64Data ? [

@@ -616,7 +616,7 @@ const Generators = () => {
               </div>
               <div className="form-group">
                 <label>Seri Numarası</label>
-                <input type="text" required placeholder="CVS-XXXXX" value={formData.serial_number || ''} onChange={e => setFormData({...formData, serial_number: e.target.value})} />
+                <input type="text" required placeholder="AKN-XXXXX" value={formData.serial_number || ''} onChange={e => setFormData({...formData, serial_number: e.target.value})} />
               </div>
               <div className="form-group">
                 <label>kVA Değeri</label>

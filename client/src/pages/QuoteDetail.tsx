@@ -201,10 +201,10 @@ const QuoteDetail = () => {
       doc.text('TEKLIF VEREN', 14, 49);
       
       doc.setFont('Helvetica', 'normal');
-      doc.text('CVS POWER Jenerator Ltd. Sti.', 14, 54);
+      doc.text('Akan Enerji Jenerator Ltd. Sti.', 14, 54);
       doc.text('Adres: Ikitelli OSB, Basaksehir / Istanbul', 14, 59);
       doc.text('Tel: 0530 960 84 39', 14, 64);
-      doc.text('E-posta: info@cvspower.com', 14, 69);
+      doc.text('E-posta: info@akanenerji.com', 14, 69);
 
       doc.setFont('Helvetica', 'bold');
       doc.text('TEKLIF SUNULAN MUSTERI', 110, 49);

@@ -296,7 +296,7 @@ const Login = () => {
       {/* LEFT COLUMN: System Info Panel */}
       <div className="login-info-panel">
         <div className="info-header">
-          <img src="/logo-2025.png" alt="CVS Power Logo" className="info-logo-img" />
+          <img src="/logo-2025.png" alt="Akan Enerji Logo" className="info-logo-img" />
         </div>
 
         <div className="info-main">
@@ -348,7 +348,7 @@ const Login = () => {
 
         <div className="info-footer">
           <Phone size={14} />
-          <span>Destek ve İletişim Hattı: <strong>0530 960 84 39</strong> | info@cvspower.com | cvspower.com</span>
+          <span>Destek ve İletişim Hattı: <strong>0530 960 84 39</strong> | info@akanenerji.com | akanenerji.com</span>
         </div>
       </div>
 
@@ -360,7 +360,7 @@ const Login = () => {
         <div className="login-card">
           {/* Logo container visible on mobile or smaller viewports */}
           <div className="logo-container" style={{ display: window.innerWidth <= 900 ? 'flex' : 'none' }}>
-            <img src="/logo-2025.png" alt="CVS Power Logo" className="logo-img" />
+            <img src="/logo-2025.png" alt="Akan Enerji Logo" className="logo-img" />
           </div>
           
           <div style={{ marginBottom: '35px' }}>
@@ -414,7 +414,7 @@ const Login = () => {
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '35px', fontSize: '11px', color: '#475569', fontWeight: '500' }}>
-            Cvspower Jeneratör Müşteri Yönetim Sistemi 1.3
+            Akan Enerji Jeneratör Müşteri Yönetim Sistemi 1.3
           </p>
         </div>
       </div>

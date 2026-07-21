@@ -168,9 +168,9 @@ export const generateServicePDF = async (data: any) => {
     doc.setFontSize(26);
     doc.setTextColor(15, 23, 42); // slate-900
     doc.setFont("helvetica", "bold");
-    doc.text("CVS", 8, 19);
-    doc.setTextColor(230, 126, 34); // CVS Orange
-    doc.text("POWER", 34, 19);
+    doc.text("AKAN", 8, 19);
+    doc.setTextColor(230, 126, 34); // Brand Accent Orange
+    doc.text("ENERJI", 34, 19);
   }
 
   // Servis Bilgi Formu Title Box (Shifted to Left)
@@ -198,7 +198,7 @@ export const generateServicePDF = async (data: any) => {
   doc.setFontSize(6.2);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text(t("SATIŞ - SERVİS - KİRALAMA - 2.EL VE YEDEK PARÇA   |   0530 960 84 39 - 0212 539 42 87   |   info@cvspower.com   |   www.cvspower.com"), 105, 29.5, { align: "center" });
+  doc.text(t("SATIŞ - SERVİS - KİRALAMA - 2.EL VE YEDEK PARÇA   |   0530 960 84 39 - 0212 539 42 87   |   info@akanenerji.com   |   www.akanenerji.com"), 105, 29.5, { align: "center" });
 
   // ----------------------------------------------------
   // 2. CİHAZ VE EKİPMAN BİLGİLERİ TABLOSU
@@ -561,7 +561,7 @@ export const generateMonthlyProgramPDF = async (month: string, year: number, ite
   doc.setFontSize(22);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text("CVSPower Operasyonel Takvim", 105, 20, { align: "center" });
+  doc.text("Akan Enerji Operasyonel Takvim", 105, 20, { align: "center" });
   
   doc.setFontSize(14);
   doc.text(t(`${month} ${year} - Bakım Programı`), 105, 32, { align: "center" });
@@ -607,7 +607,7 @@ export const generateMonthlyProgramPDF = async (month: string, year: number, ite
   doc.setTextColor(150);
   doc.text(t(`Oluşturma Tarihi: ${new Date().toLocaleString('tr-TR')}`), 105, 285, { align: "center" });
 
-  doc.save(`CVS_Program_${month}_${year}.pdf`);
+  doc.save(`Akan_Program_${month}_${year}.pdf`);
 };
 
 export const generateQuotePDF = async (quote: any) => {
@@ -654,10 +654,10 @@ export const generateQuotePDF = async (quote: any) => {
   doc.text('TEKLIF VEREN', 14, 49);
   
   doc.setFont('helvetica', 'normal');
-  doc.text('CVS POWER Jenerator Ltd. Sti.', 14, 54);
+  doc.text('Akan Enerji Jenerator Ltd. Sti.', 14, 54);
   doc.text('Adres: Ikitelli OSB, Basaksehir / Istanbul', 14, 59);
   doc.text('Tel: 0530 960 84 39', 14, 64);
-  doc.text('E-posta: info@cvspower.com', 14, 69);
+  doc.text('E-posta: info@akanenerji.com', 14, 69);
 
   doc.setFont('helvetica', 'bold');
   doc.text('TEKLIF SUNULAN MUSTERI', 110, 49);
@@ -782,12 +782,12 @@ export const generateServiceThermalPDF = async (data: any) => {
   // 1. Header Details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.text("CVS POWER", 40, 10, { align: "center" });
+  doc.text("AKAN ENERJI", 40, 10, { align: "center" });
 
   doc.setFontSize(6.5);
   doc.setFont("helvetica", "normal");
   doc.text(t("JENERATOR VE GUC SISTEMLERI"), 40, 14, { align: "center" });
-  doc.text(t("Tel: 0530 960 84 39  |  cvspower.com"), 40, 17, { align: "center" });
+  doc.text(t("Tel: 0530 960 84 39  |  akanenerji.com"), 40, 17, { align: "center" });
 
   doc.setLineWidth(0.1);
   doc.line(4, 20, 76, 20);
@@ -982,7 +982,7 @@ export const generateServiceThermalPDF = async (data: any) => {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(5.5);
   doc.setTextColor(120);
-  doc.text(t("CVS Power Servis Hizmetini Aldiginiz Icin Tesekkur Ederiz."), 40, currentY, { align: "center" });
+  doc.text(t("Akan Enerji Servis Hizmetini Aldiginiz Icin Tesekkur Ederiz."), 40, currentY, { align: "center" });
 
   doc.save(`Servis_Fisi_80mm_${data.serial_number}_${new Date().toISOString().split('T')[0]}.pdf`);
 };

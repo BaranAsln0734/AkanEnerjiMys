@@ -497,7 +497,7 @@ const GeneratorDetail = () => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>CVS Power - Jenerator Kimlik Etiketi</title>
+          <title>Akan Enerji - Jenerator Kimlik Etiketi</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
             body { 
@@ -570,13 +570,13 @@ const GeneratorDetail = () => {
         </head>
         <body>
           <div class="label-card">
-            <div class="brand-header">CVS <span>POWER</span></div>
+            <div class="brand-header">AKAN <span>ENERJI</span></div>
             <div class="sub-header">Jenerator & Guc Sistemleri</div>
             <div class="qr-wrapper">${qrSvgHtml}</div>
             <div class="info-row"><strong>Müşteri:</strong> ${gen.customer?.name || '-'}</div>
             <div class="info-row"><strong>Model:</strong> ${gen.brand || ''} ${gen.model || ''} (${gen.kva || '-'} kVA)</div>
             <div class="serial-no">SERİ NO: ${gen.serial_number}</div>
-            <div class="footer-text">Müşteri Destek: 0530 960 84 39 | cvspower.com</div>
+            <div class="footer-text">Müşteri Destek: 0530 960 84 39 | akanenerji.com</div>
           </div>
           <script>
             window.onload = () => {
@@ -1031,7 +1031,7 @@ ${serviceData.description}
           <div className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: 0 }}>
             <h3 style={{ marginBottom: '15px' }}>Cihaz Kimlik QR</h3>
             <div style={{ border: '2px solid var(--primary)', borderRadius: '12px', padding: '15px', background: '#fff', width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-              <span style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>CVS <span style={{ color: 'var(--primary)' }}>POWER</span></span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>AKAN <span style={{ color: 'var(--primary)' }}>ENERJİ</span></span>
               <span style={{ fontSize: '7px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>Jeneratör Etiketi</span>
               <div className="qr-container" style={{ margin: '12px 0', background: '#fff' }}>
                 <QRCodeSVG value={qrUrl} size={120} />
@@ -1738,11 +1738,11 @@ ${serviceData.description}
                   </div>
                   <div className="form-group">
                     <label>Model</label>
-                    <input type="text" placeholder="Örn: CVS-50" required value={editFormData.model} onChange={e => setEditFormData({...editFormData, model: e.target.value})} />
+                    <input type="text" placeholder="Örn: AKN-50" required value={editFormData.model} onChange={e => setEditFormData({...editFormData, model: e.target.value})} />
                   </div>
                   <div className="form-group">
                     <label>Seri Numarası</label>
-                    <input type="text" required placeholder="CVS-XXXXX" value={editFormData.serial_number} onChange={e => setEditFormData({...editFormData, serial_number: e.target.value})} />
+                    <input type="text" required placeholder="AKN-XXXXX" value={editFormData.serial_number} onChange={e => setEditFormData({...editFormData, serial_number: e.target.value})} />
                   </div>
                   <div className="form-group">
                     <label>Güç (kVA)</label>
