@@ -191,9 +191,9 @@ function App() {
                   {user.role === 'admin' && (
                     <>
                       <NavLink to="/" icon={LayoutDashboard}>Panel</NavLink>
-                      <NavLink to="/quick-service" icon={ClipboardCheck}>Hızlı Servis</NavLink>
                       <NavLink to="/customers" icon={Users}>Müşteriler</NavLink>
                       <NavLink to="/generators" icon={Zap}>Jeneratörler</NavLink>
+                      <NavLink to="/quick-service" icon={ClipboardCheck}>Hızlı Servis</NavLink>
                       <NavLink to="/quotes" icon={FileSignature}>Teklifler</NavLink>
                       <NavLink to="/contracts" icon={FileText}>Sözleşmeler</NavLink>
                       <NavLink to="/maintenance-program" icon={Calendar}>Yıllık Program</NavLink>

@@ -195,7 +195,7 @@ const Dashboard = () => {
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
       {/* Welcome Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+        background: 'linear-gradient(135deg, #d97706 0%, #e5a900 100%)',
         borderRadius: '24px',
         padding: '30px 40px',
         color: '#ffffff',
