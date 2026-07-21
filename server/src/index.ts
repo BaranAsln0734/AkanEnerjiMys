@@ -697,13 +697,26 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
 
 app.get('/api/diag-pm2', asyncHandler(async (req: any, res: any) => {
   const { execSync } = await import('node:child_process');
+  const fs = await import('node:fs');
+  const path = await import('node:path');
   let result = '';
   try {
     result += execSync('pm2 list', { encoding: 'utf-8' }) + '\n\n';
     result += `--- PM2 SHOW akanenerji-backend ---\n`;
     result += execSync('pm2 show akanenerji-backend', { encoding: 'utf-8' }) + '\n\n';
     result += `--- PM2 SHOW cvs-backend ---\n`;
-    result += execSync('pm2 show cvs-backend', { encoding: 'utf-8' }) + '\n';
+    result += execSync('pm2 show cvs-backend', { encoding: 'utf-8' }) + '\n\n';
+    
+    result += `--- NGINX CONFIGS ---\n`;
+    try {
+      const files = fs.readdirSync('/etc/nginx/sites-enabled');
+      for (const f of files) {
+        result += `File: /etc/nginx/sites-enabled/${f}\n`;
+        result += fs.readFileSync(path.join('/etc/nginx/sites-enabled', f), 'utf-8') + '\n\n';
+      }
+    } catch (e: any) {
+      result += `Error reading nginx configs: ${e.message}\n`;
+    }
   } catch (err: any) {
     result += `Error running pm2: ${err.message}\nStderr: ${err.stderr || ''}`;
   }
