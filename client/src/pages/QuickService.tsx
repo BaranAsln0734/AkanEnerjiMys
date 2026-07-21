@@ -116,6 +116,7 @@ const QuickService = () => {
   });
 
   const [serviceFee, setServiceFee] = useState<number>(0);
+  const [serviceType, setServiceType] = useState<string>('Genel Bakım');
   const [description, setDescription] = useState<string>('');
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<string>(
     new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -266,6 +267,8 @@ W Fazı: ${measurements.voltage_w || '-'}V / ${measurements.current_w || '-'}A
     `.trim();
 
     const fullDescription = `
+HİZMET TÜRÜ: ${serviceType}
+
 KONTROL LİSTESİ:
 ${checklistSummary}
 
@@ -332,7 +335,7 @@ ${description}
         serial_number: generatorForm.serial_number,
         model: generatorForm.model,
         service_date: new Date().toLocaleDateString('tr-TR'),
-        description: description || 'Servis ve Bakim Raporu',
+        description: `Hizmet Türü: ${serviceType}\n\n${description}` || 'Servis ve Bakim Raporu',
         techSig: techSig,
         custSig: custSig,
         service_fee: Number(serviceFee),
@@ -360,6 +363,7 @@ ${description}
     setCustomerForm({ name: '', phone: '', address: '', customer_type: 'Tüzel Kişi', category: 'Özel' });
     setGeneratorForm({ brand: 'AKAN', model: '', serial_number: '', kva: '', location: '', installation_date: new Date().toISOString().split('T')[0], warranty_status: 'Yok', contract_status: 'Yok' });
     setServiceFee(0);
+    setServiceType('Genel Bakım');
     setDescription('');
     setMeasurements({
       battery_group: '', battery_qty: '', charger_alternator: '', charger_device: '', grounding: '',
@@ -666,6 +670,25 @@ ${description}
                           onChange={e => setGeneratorForm({...generatorForm, location: e.target.value})} 
                         />
                       </div>
+                      
+                      <div className="form-group" style={{ margin: 0, gridColumn: 'span 2' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Uygulanan Hizmet Türü *</label>
+                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                          {['Genel Bakım', 'Periyodik Kontrol', 'Servis Hizmeti'].map(type => (
+                            <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
+                              <input 
+                                type="radio" 
+                                name="service_type" 
+                                value={type} 
+                                checked={serviceType === type} 
+                                onChange={() => setServiceType(type)}
+                                style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                              />
+                              {type}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -869,15 +892,6 @@ ${description}
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Sonraki Bakım Tarihi</label>
-                      <input 
-                        type="date" 
-                        value={nextMaintenanceDate} 
-                        onChange={e => setNextMaintenanceDate(e.target.value)} 
-                      />
-                    </div>
-
-                    <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Müşteri Yetkilisi (İsim Soyisim)</label>
                       <input 
                         type="text" 
@@ -887,7 +901,7 @@ ${description}
                       />
                     </div>
 
-                    <div className="form-group" style={{ gridColumn: 'span 3', margin: 0 }}>
+                    <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
                       <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Yapılan İşlemler / Açıklama</label>
                       <textarea 
                         rows={4} 
