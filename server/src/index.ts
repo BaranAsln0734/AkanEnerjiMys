@@ -691,6 +691,41 @@ app.post('/api/quick-service', authMiddleware, asyncHandler(async (req: any, res
   }
 }));
 
+app.get('/api/diag-logs', asyncHandler(async (req: any, res: any) => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const os = await import('node:os');
+  
+  const homeDir = os.homedir();
+  const pm2LogDir = path.join(homeDir, '.pm2/logs');
+  
+  let result = '';
+  try {
+    if (fs.existsSync(pm2LogDir)) {
+      const files = fs.readdirSync(pm2LogDir);
+      result += `Log files found: ${files.join(', ')}\n\n`;
+      
+      const errFile = files.find(f => f.includes('akanenerji') && (f.includes('error') || f.includes('err')));
+      if (errFile) {
+        const filePath = path.join(pm2LogDir, errFile);
+        const stats = fs.statSync(filePath);
+        const stream = fs.readFileSync(filePath, 'utf-8');
+        result += `--- ERROR LOG (${errFile}, size: ${stats.size}) ---\n`;
+        result += stream.split('\n').slice(-50).join('\n');
+      } else {
+        result += 'No error log file found for akanenerji.\n';
+      }
+    } else {
+      result += `PM2 log directory not found at: ${pm2LogDir}\n`;
+    }
+  } catch (err: any) {
+    result += `Error reading logs: ${err.message}\n`;
+  }
+  
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(result);
+}));
+
 // Parts / Inventory
 app.get('/api/parts', authMiddleware, asyncHandler(async (req, res) => {
   const db = getDb();
