@@ -520,7 +520,7 @@ ${description}
               </div>
               <button 
                 onClick={() => setShowFormModal(false)}
-                style={{ background: 'var(--bg-hover)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+                style={{ background: 'var(--bg-hover)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
               >
                 <X size={20} style={{ margin: 'auto' }} />
               </button>
