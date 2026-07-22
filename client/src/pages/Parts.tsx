@@ -364,7 +364,7 @@ const Parts = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
               <div className="form-group">
                 <label>Parça Adı</label>
-                <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Örn: Yağ Filtresi" />
+                <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value.replace(/[0-9]/g, '') })} placeholder="Örn: Yağ Filtresi" />
               </div>
               <div className="form-group">
                 <label>Parça Kodu / Numarası</label>
@@ -372,7 +372,7 @@ const Parts = () => {
               </div>
               <div className="form-group">
                 <label>Mevcut Stok Miktarı</label>
-                <input type="number" required min="0" value={formData.stock_quantity} onChange={e => setFormData({ ...formData, stock_quantity: Number(e.target.value) })} />
+                <input type="text" required value={formData.stock_quantity} onChange={e => setFormData({ ...formData, stock_quantity: Number(e.target.value.replace(/[^0-9]/g, '')) })} />
               </div>
               <div className="form-group">
                 <label>Birim</label>
@@ -387,11 +387,11 @@ const Parts = () => {
               </div>
               <div className="form-group">
                 <label>Birim Fiyatı (TL)</label>
-                <input type="number" required min="0" value={formData.unit_price} onChange={e => setFormData({ ...formData, unit_price: Number(e.target.value) })} />
+                <input type="text" required value={formData.unit_price} onChange={e => setFormData({ ...formData, unit_price: Number(e.target.value.replace(/[^0-9.]/g, '')) })} />
               </div>
               <div className="form-group">
                 <label>Kritik Stok Seviyesi</label>
-                <input type="number" required min="0" value={formData.critical_level} onChange={e => setFormData({ ...formData, critical_level: Number(e.target.value) })} />
+                <input type="text" required value={formData.critical_level} onChange={e => setFormData({ ...formData, critical_level: Number(e.target.value.replace(/[^0-9]/g, '')) })} />
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>

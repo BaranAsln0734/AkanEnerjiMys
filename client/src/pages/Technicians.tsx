@@ -124,11 +124,11 @@ const Technicians = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
               <div className="form-group">
                 <label>Ad Soyad</label>
-                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value.replace(/[0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Telefon</label>
-                <input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                <input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value.replace(/[^0-9+]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Uzmanlık Alanı</label>

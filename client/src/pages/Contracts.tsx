@@ -405,7 +405,7 @@ const Contracts = () => {
               </div>
               <div className="form-group">
                 <label>Sözleşme Bedeli (TL)</label>
-                <input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value) || 0})} />
+                <input type="text" required value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0})} />
               </div>
               
               <div className="form-group">

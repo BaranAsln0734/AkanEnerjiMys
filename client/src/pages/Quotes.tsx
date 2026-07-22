@@ -433,7 +433,7 @@ const Quotes = () => {
 
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px', color: '#64748b' }}>Miktar</label>
-                      <input type="number" required min="1" step="any" style={{ padding: '6px', fontSize: '12px' }} value={item.quantity} onChange={e => handleItemChange(idx, 'quantity', parseFloat(e.target.value) || 0)} />
+                      <input type="text" required style={{ padding: '6px', fontSize: '12px' }} value={item.quantity} onChange={e => handleItemChange(idx, 'quantity', parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0)} />
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
@@ -450,17 +450,17 @@ const Quotes = () => {
 
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px', color: '#64748b' }}>Birim Fiyatı (TL)</label>
-                      <input type="number" required min="0" step="any" style={{ padding: '6px', fontSize: '12px' }} value={item.unit_price} onChange={e => handleItemChange(idx, 'unit_price', parseFloat(e.target.value) || 0)} />
+                      <input type="text" required style={{ padding: '6px', fontSize: '12px' }} value={item.unit_price} onChange={e => handleItemChange(idx, 'unit_price', parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0)} />
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px', color: '#64748b' }}>İndirim (%)</label>
-                      <input type="number" min="0" max="100" style={{ padding: '6px', fontSize: '12px' }} value={item.discount_percent} onChange={e => handleItemChange(idx, 'discount_percent', parseFloat(e.target.value) || 0)} />
+                      <input type="text" style={{ padding: '6px', fontSize: '12px' }} value={item.discount_percent} onChange={e => handleItemChange(idx, 'discount_percent', parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0)} />
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px', color: '#64748b' }}>KDV (%)</label>
-                      <input type="number" min="0" max="100" style={{ padding: '6px', fontSize: '12px' }} value={item.vat_percent} onChange={e => handleItemChange(idx, 'vat_percent', parseFloat(e.target.value) || 0)} />
+                      <input type="text" style={{ padding: '6px', fontSize: '12px' }} value={item.vat_percent} onChange={e => handleItemChange(idx, 'vat_percent', parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0)} />
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>

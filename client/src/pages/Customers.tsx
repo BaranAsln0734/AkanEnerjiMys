@@ -309,23 +309,23 @@ const Customers = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
               <div className="form-group">
                 <label>Firma Adı / Unvanı</label>
-                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value.replace(/[0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Vergi Kimlik Numarası (VKN/TCKN)</label>
-                <input type="text" value={formData.tax_id} onChange={e => setFormData({...formData, tax_id: e.target.value})} />
+                <input type="text" value={formData.tax_id} onChange={e => setFormData({...formData, tax_id: e.target.value.replace(/[^0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Vergi Dairesi</label>
-                <input type="text" value={formData.tax_office} onChange={e => setFormData({...formData, tax_office: e.target.value})} />
+                <input type="text" value={formData.tax_office} onChange={e => setFormData({...formData, tax_office: e.target.value.replace(/[0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Yetkili Kişi</label>
-                <input type="text" value={formData.authorized_person} onChange={e => setFormData({...formData, authorized_person: e.target.value})} />
+                <input type="text" value={formData.authorized_person} onChange={e => setFormData({...formData, authorized_person: e.target.value.replace(/[0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Telefon Numarası</label>
-                <input type="text" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                <input type="text" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value.replace(/[^0-9+]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>E-posta Adresi</label>

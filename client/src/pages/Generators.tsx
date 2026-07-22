@@ -604,11 +604,11 @@ const Generators = () => {
               
               <div className="form-group">
                 <label>Çalışma Saati</label>
-                <input type="text" placeholder="Örn: 1200 Saat" value={formData.runtime_hours || ''} onChange={e => setFormData({...formData, runtime_hours: e.target.value})} />
+                <input type="text" placeholder="Örn: 1200" value={formData.runtime_hours || ''} onChange={e => setFormData({...formData, runtime_hours: e.target.value.replace(/[^0-9.]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Marka</label>
-                <input type="text" value={formData.brand || ''} onChange={e => setFormData({...formData, brand: e.target.value})} />
+                <input type="text" value={formData.brand || ''} onChange={e => setFormData({...formData, brand: e.target.value.replace(/[0-9]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Model</label>
@@ -620,7 +620,7 @@ const Generators = () => {
               </div>
               <div className="form-group">
                 <label>kVA Değeri</label>
-                <input type="text" value={formData.kva || ''} onChange={e => setFormData({...formData, kva: e.target.value})} />
+                <input type="text" value={formData.kva || ''} onChange={e => setFormData({...formData, kva: e.target.value.replace(/[^0-9.]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Kabin Durumu</label>
@@ -682,7 +682,7 @@ const Generators = () => {
               </div>
               <div className="form-group">
                 <label>Çıkış Şalter Akımı (A)</label>
-                <input type="text" value={formData.breaker_current || ''} onChange={e => setFormData({...formData, breaker_current: e.target.value})} />
+                <input type="text" value={formData.breaker_current || ''} onChange={e => setFormData({...formData, breaker_current: e.target.value.replace(/[^0-9.]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Transfer Panosu</label>
@@ -699,11 +699,11 @@ const Generators = () => {
               </div>
               <div className="form-group">
                 <label>Motor Yağ Kapasitesi (L)</label>
-                <input type="text" value={formData.oil_capacity || ''} onChange={e => setFormData({...formData, oil_capacity: e.target.value})} />
+                <input type="text" value={formData.oil_capacity || ''} onChange={e => setFormData({...formData, oil_capacity: e.target.value.replace(/[^0-9.]/g, '')})} />
               </div>
               <div className="form-group">
                 <label>Antifiriz Kapasitesi (L)</label>
-                <input type="text" value={formData.antifreeze_capacity || ''} onChange={e => setFormData({...formData, antifreeze_capacity: e.target.value})} />
+                <input type="text" value={formData.antifreeze_capacity || ''} onChange={e => setFormData({...formData, antifreeze_capacity: e.target.value.replace(/[^0-9.]/g, '')})} />
               </div>
               
               <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '10px' }}>
@@ -806,11 +806,11 @@ const Generators = () => {
               <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '10px' }}>
                 <div>
                   <label>Akü Amperi (Ah)</label>
-                  <input type="text" value={formData.battery_amperage || ''} onChange={e => setFormData({...formData, battery_amperage: e.target.value})} />
+                  <input type="text" value={formData.battery_amperage || ''} onChange={e => setFormData({...formData, battery_amperage: e.target.value.replace(/[^0-9.]/g, '')})} />
                 </div>
                 <div>
                   <label>Adet</label>
-                  <input type="text" value={formData.battery_qty} onChange={e => setFormData({...formData, battery_qty: e.target.value})} />
+                  <input type="text" value={formData.battery_qty} onChange={e => setFormData({...formData, battery_qty: e.target.value.replace(/[^0-9]/g, '')})} />
                 </div>
               </div>
               <div className="form-group">
