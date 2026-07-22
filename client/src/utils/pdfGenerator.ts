@@ -823,219 +823,341 @@ export const generateServiceThermalPDF = async (data: any) => {
     return fixTurkishChars(text);
   };
 
+  let logoBase64 = "";
+  let certBrandsImg = "";
+  try {
+    logoBase64 = await loadLogo();
+  } catch (e) {}
+
+  try {
+    certBrandsImg = await getCertBrandsImage();
+  } catch (e) {}
+
+  // Calculate dynamic roll height
+  const usedPartsCount = (data.used_parts && Array.isArray(data.used_parts)) ? data.used_parts.length : 0;
+  const checklistCount = data.checklist ? Object.keys(data.checklist).length : 20;
+  const estimatedHeight = Math.max(360, 240 + (checklistCount * 3.5) + (usedPartsCount * 5) + 60);
+
   const doc = new jsPDF({
     unit: "mm",
-    format: [80, 290]
+    format: [80, estimatedHeight]
   });
 
   doc.setFont("helvetica", "normal");
+  let currentY = 8;
 
-  // 1. Header Details
+  // 1. Logo & Header
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, 'PNG', 20, currentY, 40, 16);
+      currentY += 18;
+    } catch(e) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("AKAN ENERJI", 40, currentY + 5, { align: "center" });
+      currentY += 10;
+    }
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("AKAN ENERJI", 40, currentY + 5, { align: "center" });
+    currentY += 10;
+  }
+
+  doc.setFontSize(6.5);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("AKAN ENERJI", 40, 9, { align: "center" });
+  doc.text(t("JENERATOR VE GUC SISTEMLERI"), 40, currentY, { align: "center" });
+  currentY += 3.5;
 
-  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text(t("JENERATOR VE GUC SISTEMLERI"), 40, 13, { align: "center" });
-  doc.text(t("Ahmet Yesevi Cad. Tatli Sok. No:38 Basaksehir / IST"), 40, 16, { align: "center" });
-  doc.text(t("Tel: 0549 621 34 60  |  akanenerji.com"), 40, 19, { align: "center" });
+  doc.setFontSize(5.5);
+  doc.text(t("Ahmet Yesevi Cad. Tatli Sok. No:38 Basaksehir / IST"), 40, currentY, { align: "center" });
+  currentY += 3;
+  doc.text(t("Tel: 0549 621 34 60  |  info@akanenerji.com"), 40, currentY, { align: "center" });
+  currentY += 4;
 
-  doc.setLineWidth(0.1);
-  doc.line(4, 21, 76, 21);
+  if (certBrandsImg) {
+    try {
+      doc.addImage(certBrandsImg, 'PNG', 6, currentY, 68, 18);
+      currentY += 20;
+    } catch (e) {}
+  }
 
-  // Form Metadata
+  doc.setLineWidth(0.3);
+  doc.setDrawColor(30, 58, 138);
+  doc.line(4, currentY, 76, currentY);
+  currentY += 4;
+
+  // Report Title Box
+  doc.setFillColor(30, 58, 138);
+  doc.rect(4, currentY, 72, 6, 'F');
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  doc.text(t("SERVIS RAPORU / FISI"), 40, 24, { align: "center" });
+  doc.setTextColor(255, 255, 255);
+  doc.text(t("80mm TAM SERVIS BİLGİ RAPORU"), 40, currentY + 4.2, { align: "center" });
+  doc.setTextColor(0, 0, 0);
+  currentY += 9;
 
-  doc.setFont("helvetica", "normal");
+  // Form Meta
   doc.setFontSize(6.5);
-  doc.text(t(`Form No: 016${data.id || '651'}`), 4, 29);
-  doc.text(t(`Tarih: ${data.service_date}`), 40, 29);
+  doc.setFont("helvetica", "bold");
+  doc.text(t(`FORM NO: 016${data.id || '651'}`), 4, currentY);
+  doc.text(t(`TARİH: ${data.service_date || '-'}`), 40, currentY);
+  currentY += 3.5;
 
-  let currentY = 32;
-  if (data.start_time && data.end_time) {
-    doc.text(t(`Saatler: ${data.start_time} - ${data.end_time}`), 4, 32);
-    currentY = 35;
+  if (data.start_time || data.end_time) {
+    doc.setFont("helvetica", "normal");
+    doc.text(t(`Servis Saatleri: ${data.start_time || '-'} - ${data.end_time || '-'}`), 4, currentY);
+    currentY += 3.5;
   }
+
+  doc.setLineWidth(0.1);
+  doc.setDrawColor(200, 200, 200);
   doc.line(4, currentY, 76, currentY);
   currentY += 4;
 
-  // 2. Customer Details
+  // 2. Customer Details Section
   doc.setFont("helvetica", "bold");
-  doc.text(t("MUSTERI BILGILERI"), 4, currentY);
-  currentY += 4;
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("MÜŞTERİ / FİRMA BİLGİLERİ"), 6, currentY + 3.2);
+  currentY += 6.5;
+
   doc.setFont("helvetica", "normal");
-  const custNameLines = doc.splitTextToSize(t(data.customer?.name || '-'), 72);
+  doc.setFontSize(6);
+  const custNameLines = doc.splitTextToSize(t(`Firma: ${data.customer?.name || '-'}`), 72);
   doc.text(custNameLines, 4, currentY);
-  currentY += (custNameLines.length * 3) + 1;
+  currentY += (custNameLines.length * 3);
 
   if (data.customer?.address) {
-    const custAddrLines = doc.splitTextToSize(t(data.customer?.address), 72);
+    const custAddrLines = doc.splitTextToSize(t(`Adres: ${data.customer?.address}`), 72);
     doc.text(custAddrLines, 4, currentY);
-    currentY += (custAddrLines.length * 3) + 1;
+    currentY += (custAddrLines.length * 3);
   }
   doc.text(t(`Tel: ${data.customer?.phone || '-'}`), 4, currentY);
-  currentY += 4;
-
-  doc.line(4, currentY, 76, currentY);
-  currentY += 4;
-
-  // 3. Generator Details
-  doc.setFont("helvetica", "bold");
-  doc.text(t("CIHAZ BILGILERI"), 4, currentY);
-  currentY += 4;
-  doc.setFont("helvetica", "normal");
-  
-  const gen = data.generator || {};
-  doc.text(t(`Model: ${gen.brand || ''} ${gen.model || ''}`), 4, currentY);
   currentY += 3.5;
-  doc.text(t(`Seri No: ${gen.serial_number || data.serial_number || ''}`), 4, currentY);
-  currentY += 3.5;
-  doc.text(t(`Calisma Saati: ${gen.runtime_hours ? gen.runtime_hours + ' Saat' : '-'}`), 4, currentY);
-  currentY += 4;
-
-  doc.line(4, currentY, 76, currentY);
-  currentY += 4;
-
-  // 4. Checklist (Only show items that are not 'ok')
-  const list = data.checklist || {};
-  const allChecklistItems = Object.keys(list);
-  const abnormalItems = allChecklistItems.filter(item => list[item] !== 'ok');
-
-  doc.setFont("helvetica", "bold");
-  doc.text(t("KONTROL LISTESI RAPORU"), 4, currentY);
-  currentY += 4;
-  doc.setFont("helvetica", "normal");
-
-  if (abnormalItems.length > 0) {
-    doc.text(t(`Diger Kontroller: ${allChecklistItems.length - abnormalItems.length} Kalem TATMINKAR`), 4, currentY);
-    currentY += 3.5;
-    doc.setFont("helvetica", "bold");
-    doc.text(t("TESPIT EDILEN HUSUSLAR:"), 4, currentY);
-    currentY += 3.5;
-    doc.setFont("helvetica", "normal");
-    for (const item of abnormalItems) {
-      const status = list[item] === 'comment' ? 'Yorumlu' : 'Haric';
-      const lineText = `- ${item}: ${status}`;
-      const wrappedLine = doc.splitTextToSize(t(lineText), 72);
-      doc.text(wrappedLine, 4, currentY);
-      currentY += (wrappedLine.length * 3);
-    }
-  } else {
-    doc.text(t(`Tum Genel Kontroller (${allChecklistItems.length > 0 ? allChecklistItems.length : 20} Kalem) TATMINKAR`), 4, currentY);
+  if (data.customer_authorized_name) {
+    doc.text(t(`Firma Yetkilisi: ${data.customer_authorized_name}`), 4, currentY);
     currentY += 3.5;
   }
-  currentY += 1.5;
+
   doc.line(4, currentY, 76, currentY);
   currentY += 4;
 
-  // 5. Measurements
+  // 3. Generator & Equipment Details Section
   doc.setFont("helvetica", "bold");
-  doc.text(t("OLCUM DEGERLERI"), 4, currentY);
-  currentY += 4;
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("JENERATÖR VE EKİPMAN BİLGİLERİ"), 6, currentY + 3.2);
+  currentY += 6.5;
+
+  const gen = data.generator || {};
+  const rawHours = data.runtime_hours || data.measurements?.runtime_hours || gen.runtime_hours;
+  const runtimeDisplay = rawHours 
+    ? (String(rawHours).toLowerCase().includes('saat') ? String(rawHours) : `${rawHours} Saat`)
+    : '-';
+
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text(t(`Marka / Model: ${gen.brand || ''} ${gen.model || ''} ${gen.kva ? '(' + gen.kva + ' kVA)' : ''}`), 4, currentY);
+  currentY += 3.5;
+  doc.text(t(`Seri No: ${gen.serial_number || data.serial_number || '-'}`), 4, currentY);
+  currentY += 3.5;
+  doc.text(t(`Çalışma Saati: ${runtimeDisplay}`), 4, currentY);
+  currentY += 3.5;
+
+  if (gen.oil_filter_code || gen.fuel_filter_code || gen.air_filter_code) {
+    doc.setFont("helvetica", "bold");
+    doc.text(t("Filtre Kodları:"), 4, currentY);
+    currentY += 3;
+    doc.setFont("helvetica", "normal");
+    if (gen.oil_filter_code) { doc.text(t(`- Yağ Filtresi: ${gen.oil_filter_code}`), 6, currentY); currentY += 3; }
+    if (gen.fuel_filter_code) { doc.text(t(`- Yakıt Filtresi: ${gen.fuel_filter_code}`), 6, currentY); currentY += 3; }
+    if (gen.air_filter_code) { doc.text(t(`- Hava Filtresi: ${gen.air_filter_code}`), 6, currentY); currentY += 3; }
+  }
+
+  doc.line(4, currentY, 76, currentY);
+  currentY += 4;
+
+  // 4. Inspection Checklist (Full 20-Item Detailed List)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("SERVİS KONTROL LİSTESİ (20 KALEM)"), 6, currentY + 3.2);
+  currentY += 6.5;
+
+  const checklistObj = data.checklist || {};
+  const checklistKeys = Object.keys(checklistObj).length > 0 
+    ? Object.keys(checklistObj)
+    : [...SOL_KONTROLLER, ...SAG_KONTROLLER];
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.8);
+
+  for (const item of checklistKeys) {
+    const status = checklistObj[item] || 'ok';
+    let statusText = '[OK] Normal';
+    if (status === 'comment') statusText = '[O] Yorumlu';
+    if (status === 'na') statusText = '[X] Hariç';
+
+    const lineStr = `${statusText} - ${item}`;
+    const wrappedItem = doc.splitTextToSize(t(lineStr), 72);
+    doc.text(wrappedItem, 4, currentY);
+    currentY += (wrappedItem.length * 3);
+  }
+
+  currentY += 1;
+  doc.line(4, currentY, 76, currentY);
+  currentY += 4;
+
+  // 5. Measurements Section
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("ÖLÇÜM VE PARAMETRE DEĞERLERİ"), 6, currentY + 3.2);
+  currentY += 6.5;
 
   const m = data.measurements || {};
-  doc.text(t(`Aku Grubu / Adet: ${m.battery_group || '-'} / ${m.battery_qty || '-'}`), 4, currentY);
-  currentY += 3.5;
-  doc.text(t(`Alternator / Sarj Cihazi: ${m.charger_alternator || '-'}V / ${m.charger_device || '-'}V`), 4, currentY);
-  currentY += 3.5;
-  doc.text(t(`Yag Basinci / Hararet: ${m.oil_pressure || '-'} BAR / ${m.coolant_temp || '-'} C`), 4, currentY);
-  currentY += 3.5;
-  doc.text(t(`Frekans: ${m.frequency || '-'} Hz`), 4, currentY);
-  currentY += 4;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+
+  doc.text(t(`Akü Grubu / Adedi: ${m.battery_group || '-'} / ${m.battery_qty || '-'}`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Şarj Alternatörü: ${m.charger_alternator || '-'} Vdc`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Şarj Cihazı (Redresör): ${m.charger_device || '-'} Vdc`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Topraklama: ${m.grounding || '-'}`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Yağ Basıncı: ${m.oil_pressure || '-'} BAR`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Motor Harareti: ${m.coolant_temp || '-'} °C`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Frekans: ${m.frequency || '-'} Hz`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Yakıt Seviyesi: ${m.fuel_level_text || '-'}`), 4, currentY); currentY += 3.5;
+  doc.text(t(`U Fazı: ${m.voltage_u || '-'}V / ${m.current_u || '-'}A`), 4, currentY); currentY += 3.5;
+  doc.text(t(`V Fazı: ${m.voltage_v || '-'}V / ${m.current_v || '-'}A`), 4, currentY); currentY += 3.5;
+  doc.text(t(`W Fazı: ${m.voltage_w || '-'}V / ${m.current_w || '-'}A`), 4, currentY); currentY += 3.5;
 
   doc.line(4, currentY, 76, currentY);
   currentY += 4;
 
-  // 6. Parts Used
+  // 6. Parts Used Section
   doc.setFont("helvetica", "bold");
-  doc.text(t("KULLANILAN PARCALAR"), 4, currentY);
-  currentY += 4;
-  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("KULLANILAN YEDEK PARÇALAR"), 6, currentY + 3.2);
+  currentY += 6.5;
 
-  if (data.used_parts && data.used_parts.length > 0) {
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+
+  if (data.used_parts && Array.isArray(data.used_parts) && data.used_parts.length > 0) {
     for (const p of data.used_parts) {
-      const lineText = `${p.quantity} x ${p.name} (${p.quantity * p.unit_price} TL)`;
-      const wrappedParts = doc.splitTextToSize(t(lineText), 72);
-      doc.text(wrappedParts, 4, currentY);
-      currentY += (wrappedParts.length * 3);
+      const lineStr = `${p.quantity} x ${p.name} (${(p.quantity * (p.unit_price || 0)).toLocaleString('tr-TR')} TL)`;
+      const wrappedP = doc.splitTextToSize(t(lineStr), 72);
+      doc.text(wrappedP, 4, currentY);
+      currentY += (wrappedP.length * 3);
     }
   } else {
-    doc.text(t("Yedek parca kullanilmadi."), 4, currentY);
+    doc.text(t("Yedek parça kullanılmadı."), 4, currentY);
     currentY += 3.5;
   }
-  currentY += 1.5;
+
   doc.line(4, currentY, 76, currentY);
   currentY += 4;
 
-  // 7. Actions / Notes
-  let cleanDescription = data.description || "";
-  if (cleanDescription.includes("EK NOTLAR:")) {
-    const parts = cleanDescription.split("EK NOTLAR:");
-    cleanDescription = parts[parts.length - 1].trim();
+  // 7. Operations & Notes Section
+  let cleanDesc = data.description || "";
+  if (cleanDesc.includes("EK NOTLAR:")) {
+    const pArr = cleanDesc.split("EK NOTLAR:");
+    cleanDesc = pArr[pArr.length - 1].trim();
   }
-  
-  if (cleanDescription && cleanDescription !== "Planlı Servis Tamamlandı") {
+
+  if (cleanDesc) {
     doc.setFont("helvetica", "bold");
-    doc.text(t("YAPILAN ISLEMLER & ACIKLAMA"), 4, currentY);
-    currentY += 4;
+    doc.setFontSize(7);
+    doc.setFillColor(240, 240, 240);
+    doc.rect(4, currentY, 72, 4.5, 'F');
+    doc.text(t("YAPILAN İŞLEMLER VE EK NOTLAR"), 6, currentY + 3.2);
+    currentY += 6.5;
+
     doc.setFont("helvetica", "normal");
-    const descLines = doc.splitTextToSize(t(cleanDescription), 72);
+    doc.setFontSize(6);
+    const descLines = doc.splitTextToSize(t(cleanDesc), 72);
     doc.text(descLines, 4, currentY);
-    currentY += (descLines.length * 3) + 1;
+    currentY += (descLines.length * 3);
+
     doc.line(4, currentY, 76, currentY);
     currentY += 4;
   }
 
-  // 8. Signatures (Text-based names for receipt speed)
+  // 8. Financial Totals
   doc.setFont("helvetica", "bold");
-  doc.text(t("IMZALAR"), 4, currentY);
-  currentY += 4;
+  doc.setFontSize(7);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(4, currentY, 72, 4.5, 'F');
+  doc.text(t("FİNANSAL ÖZET"), 6, currentY + 3.2);
+  currentY += 6.5;
+
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
 
-  doc.text(t(`Teknisyen: ${data.tech_name || '-'}`), 4, currentY);
-  if (data.techSig) {
-    try {
-      doc.addImage(data.techSig, "PNG", 4, currentY + 1, 30, 8);
-    } catch(e){}
-  }
-  
-  doc.text(t(`Musteri: ${data.customer_authorized_name || '-'}`), 40, currentY);
-  if (data.custSig) {
-    try {
-      doc.addImage(data.custSig, "PNG", 40, currentY + 1, 30, 8);
-    } catch(e){}
-  }
-  currentY += 10.5;
-
-  doc.line(4, currentY, 76, currentY);
-  currentY += 4;
-
-  // 9. Totals
-  const subTotal = (data.service_fee || 0) + (data.total_cost || 0);
+  const fee = data.service_fee || 0;
+  const partsCost = data.total_cost || 0;
+  const subTotal = fee + partsCost;
   const vat = subTotal * 0.20;
   const grandTotal = subTotal + vat;
 
-  doc.text(t(`Ara Toplam: ${subTotal.toLocaleString('tr-TR')} TL`), 4, currentY);
-  currentY += 3.5;
-  doc.text(t(`KDV %20: ${vat.toLocaleString('tr-TR')} TL`), 4, currentY);
-  currentY += 3.5;
+  doc.text(t(`Servis İşçilik Ücreti: ${fee.toLocaleString('tr-TR')} TL`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Yedek Parça Tutarı: ${partsCost.toLocaleString('tr-TR')} TL`), 4, currentY); currentY += 3.5;
+  doc.text(t(`Ara Toplam: ${subTotal.toLocaleString('tr-TR')} TL`), 4, currentY); currentY += 3.5;
+  doc.text(t(`KDV (%20): ${vat.toLocaleString('tr-TR')} TL`), 4, currentY); currentY += 3.5;
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.text(t(`GENEL TOPLAM: ${grandTotal.toLocaleString('tr-TR')} TL`), 4, currentY);
   currentY += 5;
 
-  // Footer message
   doc.line(4, currentY, 76, currentY);
   currentY += 4;
+
+  // 9. High-Resolution Digital Signatures
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text(t("TESLİM EDEN VE TESLİM ALAN İMZALARI"), 4, currentY);
+  currentY += 4;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+
+  // Technician Sig Box
+  doc.text(t(`Teknisyen: ${data.technician_name || data.tech_name || 'Akan Enerji'}`), 4, currentY);
+  if (data.techSig) {
+    try {
+      doc.addImage(data.techSig, "PNG", 4, currentY + 1, 32, 12);
+    } catch(e) {}
+  }
+
+  // Customer Sig Box
+  doc.text(t(`Müşteri Yetkilisi: ${data.customer_authorized_name || '-'}`), 40, currentY);
+  if (data.custSig) {
+    try {
+      doc.addImage(data.custSig, "PNG", 40, currentY + 1, 32, 12);
+    } catch(e) {}
+  }
+
+  currentY += 15;
+  doc.line(4, currentY, 76, currentY);
+  currentY += 4;
+
+  // 10. Footer Message
   doc.setFont("helvetica", "normal");
   doc.setFontSize(5.5);
-  doc.setTextColor(120);
-  doc.text(t("Akan Enerji Servis Hizmetini Aldiginiz Icin Tesekkur Ederiz."), 40, currentY, { align: "center" });
+  doc.setTextColor(100);
+  doc.text(t("Akan Enerji Servis Hizmetini Aldığınız İçin Teşekkür Ederiz."), 40, currentY, { align: "center" });
+  currentY += 3;
+  doc.text(t("Ahmet Yesevi Caddesi Tatlı Sokak No: 38 Başakşehir / İSTANBUL"), 40, currentY, { align: "center" });
 
-  doc.save(`Servis_Fisi_80mm_${data.serial_number}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Servis_Raporu_80mm_${data.serial_number || 'Akan'}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
