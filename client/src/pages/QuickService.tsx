@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
-import { Play, Zap, User, Settings, ClipboardCheck, ArrowRight, Plus, Trash2, FileText, Download, Check, RefreshCw, X } from 'lucide-react';
+import { Play, Zap, User, Settings, ClipboardCheck, ArrowRight, Plus, Trash2, FileText, Download, Check, RefreshCw, X, Printer } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
-import { generateServicePDF } from '../utils/pdfGenerator';
+import { generateServicePDF, generateServiceThermalPDF } from '../utils/pdfGenerator';
 
 interface Customer {
   id: number;
@@ -213,7 +213,7 @@ const QuickService = () => {
     setUsedParts(usedParts.filter(p => p.id !== id));
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent, pdfFormat: 'a4' | '80mm' = 'a4') => {
     e.preventDefault();
 
     if (!customerForm.name || !customerForm.phone || !customerForm.address) {
@@ -338,8 +338,7 @@ ${description}
       
       const totalPartsCost = usedParts.reduce((sum, p) => sum + (p.quantity * p.unit_price), 0);
       
-      // Auto trigger PDF generation
-      generateServicePDF({
+      const pdfData = {
         id: response.data.service_record_id,
         generator: {
           brand: generatorForm.brand,
@@ -366,7 +365,14 @@ ${description}
         measurements: measurements,
         customer_authorized_name: customerAuthorizedName,
         technician_name: techName
-      });
+      };
+
+      // Trigger chosen PDF format
+      if (pdfFormat === '80mm') {
+        generateServiceThermalPDF(pdfData);
+      } else {
+        generateServicePDF(pdfData);
+      }
 
       // Reset form and reload
       setShowFormModal(false);
@@ -499,13 +505,55 @@ ${description}
       },
       customer: {
         name: record.customer_name || '',
-        phone: '',
-        address: ''
+        phone: record.customer_phone || '',
+        address: record.customer_address || ''
       },
       serial_number: record.generator_serial || '',
       model: record.generator_model || '',
       service_date: new Date(record.service_date).toLocaleDateString('tr-TR'),
-      description: record.description.split('EK NOTLAR:\n')[1] || record.description,
+      description: record.description?.split('EK NOTLAR:\n')[1] || record.description || '',
+      techSig: record.technician_signature_url || '',
+      custSig: record.customer_signature_url || '',
+      service_fee: record.service_fee || 0,
+      total_cost: totalPartsCost,
+      used_parts: parsedChecklist.used_parts || [],
+      checklist: parsedChecklist.checklist || {},
+      measurements: parsedChecklist.measurements || {},
+      customer_authorized_name: parsedChecklist.customer_authorized_name || '',
+      technician_name: parsedChecklist.technician_name || 'Teknisyen'
+    });
+  };
+
+  const downloadExistingThermalPDF = (record: ServiceRecord) => {
+    let parsedChecklist: any = {};
+    if (record.checklist_json) {
+      try {
+        parsedChecklist = JSON.parse(record.checklist_json);
+      } catch (e) {}
+    }
+
+    const totalPartsCost = Array.isArray(parsedChecklist.used_parts) 
+      ? parsedChecklist.used_parts.reduce((sum: number, p: any) => sum + (p.quantity * (p.unit_price || 0)), 0)
+      : 0;
+
+    generateServiceThermalPDF({
+      id: record.id,
+      generator: {
+        brand: record.generator_brand || '',
+        model: record.generator_model || '',
+        serial_number: record.generator_serial || '',
+        kva: record.generator_kva || '',
+        location: record.generator_serial || ''
+      },
+      customer: {
+        name: record.customer_name || '',
+        phone: record.customer_phone || '',
+        address: record.customer_address || ''
+      },
+      serial_number: record.generator_serial || '',
+      model: record.generator_model || '',
+      service_date: new Date(record.service_date).toLocaleDateString('tr-TR'),
+      description: record.description?.split('EK NOTLAR:\n')[1] || record.description || '',
       techSig: record.technician_signature_url || '',
       custSig: record.customer_signature_url || '',
       service_fee: record.service_fee || 0,
@@ -602,6 +650,7 @@ ${description}
                       <button
                         onClick={() => downloadExistingPDF(record)}
                         className="btn btn-secondary"
+                        title="Standart A4 PDF İndir"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -613,7 +662,24 @@ ${description}
                           marginRight: '6px'
                         }}
                       >
-                        <Download size={12} /> PDF
+                        <Download size={12} /> PDF (A4)
+                      </button>
+                      <button
+                        onClick={() => downloadExistingThermalPDF(record)}
+                        className="btn btn-secondary"
+                        title="80mm Termal Fiş İndir"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          color: '#d97706',
+                          marginRight: '6px'
+                        }}
+                      >
+                        <Printer size={12} /> 80mm Fiş
                       </button>
                       <button
                         onClick={() => handleEditClick(record)}
@@ -1107,11 +1173,12 @@ ${description}
                     type="submit"
                     className="btn btn-primary"
                     disabled={submitting}
+                    onClick={(e) => handleFormSubmit(e, 'a4')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      padding: '12px 30px',
+                      padding: '12px 24px',
                       fontWeight: '800',
                       borderRadius: '10px',
                       cursor: submitting ? 'not-allowed' : 'pointer'
@@ -1123,9 +1190,29 @@ ${description}
                       </>
                     ) : (
                       <>
-                        <Check size={18} /> Raporu Kaydet ve PDF Üret
+                        <Check size={18} /> Raporu Kaydet ve A4 PDF Üret
                       </>
                     )}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={submitting}
+                    onClick={(e) => handleFormSubmit(e, '80mm')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 24px',
+                      fontWeight: '800',
+                      borderRadius: '10px',
+                      background: '#d97706',
+                      color: '#ffffff',
+                      border: 'none',
+                      cursor: submitting ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <Printer size={18} /> Raporu Kaydet ve 80mm Fiş Üret
                   </button>
                 </div>
 

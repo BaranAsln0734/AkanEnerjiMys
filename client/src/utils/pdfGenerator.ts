@@ -39,8 +39,8 @@ const getCertBrandsImage = (): Promise<string> => {
   return new Promise((resolve) => {
     try {
       const canvas = document.createElement("canvas");
-      canvas.width = 960;
-      canvas.height = 300;
+      canvas.width = 1100;
+      canvas.height = 320;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         resolve("");
@@ -49,71 +49,122 @@ const getCertBrandsImage = (): Promise<string> => {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Helper for ISO badge
-      const drawIsoBadge = (x: number, y: number, w: number, h: number, bg: string, stroke: string, code: string, title: string) => {
-        ctx.fillStyle = bg;
+      // Helper function to draw realistic ISO Badges
+      const drawIsoBadge = (x: number, y: number, w: number, h: number, primaryColor: string, accentColor: string, code: string, title: string) => {
+        // Main Badge Container with linear gradient
+        const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+        gradient.addColorStop(0, primaryColor);
+        gradient.addColorStop(1, accentColor);
+
+        ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, 10);
+        ctx.roundRect(x, y, w, h, 12);
         ctx.fill();
-        ctx.strokeStyle = stroke;
-        ctx.lineWidth = 3;
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        // ISO Emblem Box
-        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.fillRect(x + 12, y + 12, 105, 110);
+        // Left Emblem Box
+        ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+        ctx.beginPath();
+        ctx.roundRect(x + 10, y + 10, 100, h - 20, 8);
+        ctx.fill();
+
         ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(x + 12, y + 12, 105, 110);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x + 14, y + 14, 92, h - 28);
 
+        // Globe / Grid background lines inside emblem box
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x + 60, y + (h / 2), 32, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(x + 60, y + (h / 2), 32, 16, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // ISO Text
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 42px Arial";
+        ctx.font = "900 36px Arial, Helvetica, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("ISO", x + 64, y + 80);
+        ctx.fillText("ISO", x + 60, y + (h / 2) + 12);
 
-        // Code & Subtitle
+        // Right Content: Standard Code and Title
         ctx.textAlign = "left";
-        ctx.font = "bold 36px Arial";
-        ctx.fillText(code, x + 132, y + 62);
-        ctx.font = "bold 20px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 32px Arial, Helvetica, sans-serif";
+        ctx.fillText(code, x + 124, y + 52);
+
         ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-        ctx.fillText(title, x + 132, y + 98);
+        ctx.font = "bold 18px Arial, Helvetica, sans-serif";
+        ctx.fillText(title, x + 124, y + 88);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        ctx.font = "14px Arial, Helvetica, sans-serif";
+        ctx.fillText("ULUSLARARASI SERTİFİKALI", x + 124, y + 114);
       };
 
-      // Row 1: ISO 9001, ISO 14001, ISO 45001
-      drawIsoBadge(10, 10, 305, 135, "#1e3a8a", "#3b82f6", "9001:2015", "KALİTE YÖNETİMİ");
-      drawIsoBadge(325, 10, 305, 135, "#065f46", "#10b981", "14001:2015", "ÇEVRE YÖNETİMİ");
-      drawIsoBadge(640, 10, 310, 135, "#0f766e", "#14b8a6", "45001:2018", "İSG YÖNETİMİ");
+      // Helper function to draw authentic TSE-HYB Badge
+      const drawTseBadge = (x: number, y: number, w: number, h: number) => {
+        // Red Crimson Gradient
+        const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+        gradient.addColorStop(0, "#991b1b");
+        gradient.addColorStop(1, "#dc2626");
 
-      // Row 2: ISO 22301 and TSE - HYB
-      drawIsoBadge(10, 155, 460, 135, "#3730a3", "#6366f1", "22301:2019", "İŞ SÜREKLİLİĞİ YÖNETİMİ");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 12);
+        ctx.fill();
 
-      // TSE - HYB Official Red Badge
-      ctx.fillStyle = "#991b1b";
-      ctx.beginPath();
-      ctx.roundRect(485, 155, 465, 135, 10);
-      ctx.fill();
-      ctx.strokeStyle = "#ef4444";
-      ctx.lineWidth = 3;
-      ctx.stroke();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-      // TSE Shield Icon
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(545, 222, 45, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#991b1b";
-      ctx.font = "900 32px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("TSE", 545, 233);
+        // Official TSE Oval Shield
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.ellipse(x + 70, y + (h / 2), 52, 42, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "left";
-      ctx.font = "bold 38px Arial";
-      ctx.fillText("TSE - HYB", 608, 207);
-      ctx.font = "bold 20px Arial";
-      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.fillText("HİZMET YETERLİLİK BELGESİ", 608, 243);
+        ctx.strokeStyle = "#991b1b";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(x + 70, y + (h / 2), 48, 38, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // TSE Letters inside Shield
+        ctx.fillStyle = "#991b1b";
+        ctx.font = "900 36px Arial, Helvetica, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("TSE", x + 70, y + (h / 2) + 12);
+        ctx.restore();
+
+        // Right Text: TSE - HYB
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 32px Arial, Helvetica, sans-serif";
+        ctx.fillText("TSE - HYB", x + 138, y + 52);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.font = "bold 18px Arial, Helvetica, sans-serif";
+        ctx.fillText("HİZMET YETERLİLİK BELGESİ", x + 138, y + 88);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        ctx.font = "14px Arial, Helvetica, sans-serif";
+        ctx.fillText("TS 12650 STANDARDI UYGUNLUK", x + 138, y + 114);
+      };
+
+      // Top Row: ISO 9001:2015, ISO 14001:2015, ISO 45001:2018
+      drawIsoBadge(10, 10, 350, 140, "#1e3a8a", "#2563eb", "9001:2015", "KALİTE YÖNETİMİ");
+      drawIsoBadge(375, 10, 350, 140, "#065f46", "#059669", "14001:2015", "ÇEVRE YÖNETİMİ");
+      drawIsoBadge(740, 10, 350, 140, "#0f766e", "#0d9488", "45001:2018", "İSG YÖNETİMİ");
+
+      // Bottom Row: ISO 22301:2019 and TSE-HYB
+      drawIsoBadge(10, 165, 520, 140, "#3730a3", "#4f46e5", "22301:2019", "İŞ SÜREKLİLİĞİ YÖNETİMİ");
+      drawTseBadge(550, 165, 540, 140);
 
       resolve(canvas.toDataURL("image/png"));
     } catch (err) {
@@ -129,7 +180,7 @@ const drawFooterStrip = (doc: jsPDF) => {
   doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text(fixTurkishChars("MERKEZ ATÖLYE: İkitelli O.S.B. Esenler Sanayi Sitesi 7. Blok No:4 Başakşehir / İSTANBUL"), 105, 283, { align: "center" });
+  doc.text(fixTurkishChars("MERKEZ ATÖLYE: Ahmet Yesevi Caddesi Tatlı Sokak No: 38 Başakşehir / İSTANBUL"), 105, 283, { align: "center" });
 };
 
 export const generateServicePDF = async (data: any) => {
@@ -198,7 +249,7 @@ export const generateServicePDF = async (data: any) => {
   doc.setFontSize(6.2);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text(t("SATIŞ - SERVİS - KİRALAMA - 2.EL VE YEDEK PARÇA   |   0530 960 84 39 - 0212 539 42 87   |   info@akanenerji.com   |   www.akanenerji.com"), 105, 29.5, { align: "center" });
+  doc.text(t("SATIŞ - SERVİS - KİRALAMA - 2.EL VE YEDEK PARÇA   |   0549 621 34 60   |   info@akanenerji.com   |   www.akanenerji.com"), 105, 29.5, { align: "center" });
 
   // ----------------------------------------------------
   // 2. CİHAZ VE EKİPMAN BİLGİLERİ TABLOSU
@@ -655,8 +706,8 @@ export const generateQuotePDF = async (quote: any) => {
   
   doc.setFont('helvetica', 'normal');
   doc.text('Akan Enerji Jenerator Ltd. Sti.', 14, 54);
-  doc.text('Adres: Ikitelli OSB, Basaksehir / Istanbul', 14, 59);
-  doc.text('Tel: 0530 960 84 39', 14, 64);
+  doc.text('Adres: Ahmet Yesevi Cad. Tatli Sok. No:38 Basaksehir / Istanbul', 14, 59);
+  doc.text('Tel: 0549 621 34 60', 14, 64);
   doc.text('E-posta: info@akanenerji.com', 14, 69);
 
   doc.setFont('helvetica', 'bold');
@@ -782,15 +833,16 @@ export const generateServiceThermalPDF = async (data: any) => {
   // 1. Header Details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.text("AKAN ENERJI", 40, 10, { align: "center" });
+  doc.text("AKAN ENERJI", 40, 9, { align: "center" });
 
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text(t("JENERATOR VE GUC SISTEMLERI"), 40, 14, { align: "center" });
-  doc.text(t("Tel: 0530 960 84 39  |  akanenerji.com"), 40, 17, { align: "center" });
+  doc.text(t("JENERATOR VE GUC SISTEMLERI"), 40, 13, { align: "center" });
+  doc.text(t("Ahmet Yesevi Cad. Tatli Sok. No:38 Basaksehir / IST"), 40, 16, { align: "center" });
+  doc.text(t("Tel: 0549 621 34 60  |  akanenerji.com"), 40, 19, { align: "center" });
 
   doc.setLineWidth(0.1);
-  doc.line(4, 20, 76, 20);
+  doc.line(4, 21, 76, 21);
 
   // Form Metadata
   doc.setFont("helvetica", "bold");

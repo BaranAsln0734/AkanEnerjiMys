@@ -348,7 +348,7 @@ const Login = () => {
 
         <div className="info-footer">
           <Phone size={14} />
-          <span>Destek ve İletişim Hattı: <strong>0530 960 84 39</strong> | info@akanenerji.com | akanenerji.com</span>
+          <span>Destek ve İletişim Hattı: <strong>0549 621 34 60</strong> | info@akanenerji.com | akanenerji.com</span>
         </div>
       </div>
 

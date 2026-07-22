@@ -590,7 +590,7 @@ const GeneratorDetail = () => {
             <div class="info-row"><strong>Müşteri:</strong> ${gen.customer?.name || '-'}</div>
             <div class="info-row"><strong>Model:</strong> ${gen.brand || ''} ${gen.model || ''} (${gen.kva || '-'} kVA)</div>
             <div class="serial-no">SERİ NO: ${gen.serial_number}</div>
-            <div class="footer-text">Müşteri Destek: 0530 960 84 39 | akanenerji.com</div>
+            <div class="footer-text">Müşteri Destek: 0549 621 34 60 | akanenerji.com</div>
           </div>
           <script>
             window.onload = () => {

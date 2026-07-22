@@ -202,8 +202,8 @@ const QuoteDetail = () => {
       
       doc.setFont('Helvetica', 'normal');
       doc.text('Akan Enerji Jenerator Ltd. Sti.', 14, 54);
-      doc.text('Adres: Ikitelli OSB, Basaksehir / Istanbul', 14, 59);
-      doc.text('Tel: 0530 960 84 39', 14, 64);
+      doc.text('Adres: Ahmet Yesevi Cad. Tatli Sok. No:38 Basaksehir / Istanbul', 14, 59);
+      doc.text('Tel: 0549 621 34 60', 14, 64);
       doc.text('E-posta: info@akanenerji.com', 14, 69);
 
       doc.setFont('Helvetica', 'bold');
