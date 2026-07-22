@@ -1,6 +1,19 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const SOL_KONTROLLER = [
+  "Yağ Seviyesi", "Su Seviyesi ve Katkılar", "Yakıt Seviyesi", "Turbo Kontrolü",
+  "Kutup Başları ve Kabloları", "Kayış Gerginlikleri", "Alternatör Kontrolü",
+  "Radyatör Kontrolü", "Egzoz Sistemi", "Havalandırma Sistemi"
+];
+
+const SAG_KONTROLLER = [
+  "Blok Su Isıtıcı ve Hortumları", "Sirkülasyon ve Devirdaim Kontrolü",
+  "Filtrelerin Kontrolü", "Marş Motoru Kontrolü", "Güç ve Kumanda Devresi Kontrolü",
+  "Pompa - Enjektör - Yakıt Yolu - Solenoid", "Kontrol Panosu", "Kontrol Cihazı",
+  "Göstergeler", "Transfer Panosu"
+];
+
 // Helper function to fix Turkish characters for standard PDF fonts (replace with English equivalents)
 const fixTurkishChars = (text: string | undefined | null): string => {
   if (!text) return "";
