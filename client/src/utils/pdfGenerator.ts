@@ -62,65 +62,102 @@ const getCertBrandsImage = (): Promise<string> => {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Helper function to draw realistic ISO Badges
-      const drawIsoBadge = (x: number, y: number, w: number, h: number, primaryColor: string, accentColor: string, code: string, title: string) => {
-        // Main Badge Container with linear gradient
+      // Helper function to draw authentic 3D circular ISO Certificate Seals
+      const drawOfficialIsoSeal = (x: number, y: number, w: number, h: number, primaryColor: string, accentColor: string, code: string, title: string) => {
+        // Main rounded card background
         const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
         gradient.addColorStop(0, primaryColor);
         gradient.addColorStop(1, accentColor);
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, 12);
+        ctx.roundRect(x, y, w, h, 14);
         ctx.fill();
 
         ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Left Emblem Box
-        ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+        // --- CIRCULAR GUARANTEE SEAL (LEFT SIDE) ---
+        const cx = x + 68;
+        const cy = y + (h / 2);
+        const radius = 54;
+
+        // Outer Serrated / Starburst Seal Teeth (24 Points)
+        ctx.save();
+        ctx.fillStyle = "#f59e0b"; // Gold Seal Teeth Accent
         ctx.beginPath();
-        ctx.roundRect(x + 10, y + 10, 100, h - 20, 8);
+        const points = 24;
+        for (let i = 0; i < points * 2; i++) {
+          const r = (i % 2 === 0) ? radius + 4 : radius - 2;
+          const angle = (i * Math.PI) / points;
+          const px = cx + r * Math.cos(angle);
+          const py = cy + r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x + 14, y + 14, 92, h - 28);
-
-        // Globe / Grid background lines inside emblem box
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(x + 60, y + (h / 2), 32, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.ellipse(x + 60, y + (h / 2), 32, 16, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // ISO Text
+        // Inner Gold Metallic Ring
         ctx.fillStyle = "#ffffff";
-        ctx.font = "900 36px Arial, Helvetica, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("ISO", x + 60, y + (h / 2) + 12);
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - 3, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Right Content: Standard Code and Title
+        // Colored Inner Core Ring
+        ctx.fillStyle = primaryColor;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White Globe & Lat/Long Grid Lines (Authentic ISO Emblem)
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.lineWidth = 1.5;
+
+        // Outer Globe Ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Latitude Lines
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 34, 18, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 34, 9, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Longitude Line
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 34);
+        ctx.lineTo(cx, cy + 34);
+        ctx.stroke();
+
+        // ISO Text Banner
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 32px Arial, Helvetica, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ISO", cx, cy + 11);
+        ctx.restore();
+
+        // --- RIGHT TEXT CONTENT ---
         ctx.textAlign = "left";
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 32px Arial, Helvetica, sans-serif";
-        ctx.fillText(code, x + 124, y + 52);
+        ctx.fillText(code, x + 138, y + 52);
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
         ctx.font = "bold 18px Arial, Helvetica, sans-serif";
-        ctx.fillText(title, x + 124, y + 88);
+        ctx.fillText(title, x + 138, y + 88);
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        ctx.font = "14px Arial, Helvetica, sans-serif";
-        ctx.fillText("ULUSLARARASI SERTİFİKALI", x + 124, y + 114);
+        ctx.fillStyle = "#fde047"; // Gold Subtext Accent
+        ctx.font = "bold 13px Arial, Helvetica, sans-serif";
+        ctx.fillText("ULUSLARARASI GARANTİ MÜHÜRÜ", x + 138, y + 114);
       };
 
-      // Helper function to draw authentic TSE-HYB Badge
-      const drawTseBadge = (x: number, y: number, w: number, h: number) => {
+      // Helper function to draw authentic Official TSE Seal
+      const drawOfficialTseSeal = (x: number, y: number, w: number, h: number) => {
         // Red Crimson Gradient
         const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
         gradient.addColorStop(0, "#991b1b");
@@ -128,56 +165,77 @@ const getCertBrandsImage = (): Promise<string> => {
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, 12);
+        ctx.roundRect(x, y, w, h, 14);
         ctx.fill();
 
         ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Official TSE Oval Shield
+        // --- CIRCULAR TSE GUARANTEE STAMP (LEFT SIDE) ---
+        const cx = x + 72;
+        const cy = y + (h / 2);
+        const radius = 54;
+
+        // Serrated Outer Gold Teeth
         ctx.save();
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#f59e0b";
         ctx.beginPath();
-        ctx.ellipse(x + 70, y + (h / 2), 52, 42, 0, 0, Math.PI * 2);
+        const points = 24;
+        for (let i = 0; i < points * 2; i++) {
+          const r = (i % 2 === 0) ? radius + 4 : radius - 2;
+          const angle = (i * Math.PI) / points;
+          const px = cx + r * Math.cos(angle);
+          const py = cy + r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
         ctx.fill();
 
+        // Inner White Shield Base
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 48, 38, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Red Oval Ring
         ctx.strokeStyle = "#991b1b";
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.ellipse(x + 70, y + (h / 2), 48, 38, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, 44, 34, 0, 0, Math.PI * 2);
         ctx.stroke();
 
         // TSE Letters inside Shield
         ctx.fillStyle = "#991b1b";
         ctx.font = "900 36px Arial, Helvetica, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("TSE", x + 70, y + (h / 2) + 12);
+        ctx.fillText("TSE", cx, cy + 12);
         ctx.restore();
 
-        // Right Text: TSE - HYB
+        // --- RIGHT TEXT CONTENT ---
         ctx.textAlign = "left";
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 32px Arial, Helvetica, sans-serif";
-        ctx.fillText("TSE - HYB", x + 138, y + 52);
+        ctx.fillText("TSE - HYB", x + 144, y + 52);
 
         ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
         ctx.font = "bold 18px Arial, Helvetica, sans-serif";
-        ctx.fillText("HİZMET YETERLİLİK BELGESİ", x + 138, y + 88);
+        ctx.fillText("HİZMET YETERLİLİK BELGESİ", x + 144, y + 88);
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        ctx.font = "14px Arial, Helvetica, sans-serif";
-        ctx.fillText("TS 12650 STANDARDI UYGUNLUK", x + 138, y + 114);
+        ctx.fillStyle = "#fde047";
+        ctx.font = "bold 13px Arial, Helvetica, sans-serif";
+        ctx.fillText("TS 12650 RESMİ STAMP", x + 144, y + 114);
       };
 
       // Top Row: ISO 9001:2015, ISO 14001:2015, ISO 45001:2018
-      drawIsoBadge(10, 10, 350, 140, "#1e3a8a", "#2563eb", "9001:2015", "KALİTE YÖNETİMİ");
-      drawIsoBadge(375, 10, 350, 140, "#065f46", "#059669", "14001:2015", "ÇEVRE YÖNETİMİ");
-      drawIsoBadge(740, 10, 350, 140, "#0f766e", "#0d9488", "45001:2018", "İSG YÖNETİMİ");
+      drawOfficialIsoSeal(10, 10, 350, 140, "#1e3a8a", "#2563eb", "9001:2015", "KALİTE YÖNETİMİ");
+      drawOfficialIsoSeal(375, 10, 350, 140, "#065f46", "#059669", "14001:2015", "ÇEVRE YÖNETİMİ");
+      drawOfficialIsoSeal(740, 10, 350, 140, "#0f766e", "#0d9488", "45001:2018", "İSG YÖNETİMİ");
 
       // Bottom Row: ISO 22301:2019 and TSE-HYB
-      drawIsoBadge(10, 165, 520, 140, "#3730a3", "#4f46e5", "22301:2019", "İŞ SÜREKLİLİĞİ YÖNETİMİ");
-      drawTseBadge(550, 165, 540, 140);
+      drawOfficialIsoSeal(10, 165, 520, 140, "#3730a3", "#4f46e5", "22301:2019", "İŞ SÜREKLİLİĞİ YÖNETİMİ");
+      drawOfficialTseSeal(550, 165, 540, 140);
 
       resolve(canvas.toDataURL("image/png"));
     } catch (err) {
