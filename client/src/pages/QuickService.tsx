@@ -799,7 +799,7 @@ ${description}
                           required 
                           placeholder="Örn: 05551234567" 
                           value={customerForm.phone} 
-                          onChange={e => setCustomerForm({...customerForm, phone: e.target.value})} 
+                          onChange={e => setCustomerForm({...customerForm, phone: e.target.value.replace(/[^0-9+]/g, '')})} 
                         />
                       </div>
                       <div className="form-group" style={{ margin: 0 }}>
@@ -828,7 +828,7 @@ ${description}
                           type="text" 
                           required 
                           value={generatorForm.brand} 
-                          onChange={e => setGeneratorForm({...generatorForm, brand: e.target.value})} 
+                          onChange={e => setGeneratorForm({...generatorForm, brand: e.target.value.replace(/[0-9]/g, '')})} 
                         />
                       </div>
                       <div className="form-group" style={{ margin: 0 }}>
@@ -855,9 +855,9 @@ ${description}
                         <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Güç (kVA)</label>
                         <input 
                           type="text" 
-                          placeholder="Örn: 150 kVA" 
+                          placeholder="Örn: 150" 
                           value={generatorForm.kva} 
-                          onChange={e => setGeneratorForm({...generatorForm, kva: e.target.value})} 
+                          onChange={e => setGeneratorForm({...generatorForm, kva: e.target.value.replace(/[^0-9.]/g, '')})} 
                         />
                       </div>
                       <div className="form-group" style={{ margin: 0, gridColumn: 'span 2' }}>
@@ -922,43 +922,43 @@ ${description}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Jeneratör Çalışma Saati *</label>
-                      <input type="text" required placeholder="Örn: 1250 Saat" value={measurements.runtime_hours} onChange={e => setMeasurements({...measurements, runtime_hours: e.target.value})} />
+                      <input type="text" required placeholder="Örn: 1250" value={measurements.runtime_hours} onChange={e => setMeasurements({...measurements, runtime_hours: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Akü Grubu (Voltaj)</label>
-                      <input type="text" placeholder="Örn: 12V / 24V" value={measurements.battery_group} onChange={e => setMeasurements({...measurements, battery_group: e.target.value})} />
+                      <input type="text" placeholder="Örn: 12V / 24V" value={measurements.battery_group} onChange={e => setMeasurements({...measurements, battery_group: e.target.value.replace(/[^0-9Vv\s]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Akü Adedi</label>
-                      <input type="text" placeholder="Örn: 1 Adet" value={measurements.battery_qty} onChange={e => setMeasurements({...measurements, battery_qty: e.target.value})} />
+                      <input type="text" placeholder="Örn: 1" value={measurements.battery_qty} onChange={e => setMeasurements({...measurements, battery_qty: e.target.value.replace(/[^0-9]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Şarj Alternatörü (Vdc)</label>
-                      <input type="text" placeholder="Örn: 13.8 Vdc" value={measurements.charger_alternator} onChange={e => setMeasurements({...measurements, charger_alternator: e.target.value})} />
+                      <input type="text" placeholder="Örn: 13.8" value={measurements.charger_alternator} onChange={e => setMeasurements({...measurements, charger_alternator: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Şarj Cihazı (Vdc)</label>
-                      <input type="text" placeholder="Örn: 27.6 Vdc" value={measurements.charger_device} onChange={e => setMeasurements({...measurements, charger_device: e.target.value})} />
+                      <input type="text" placeholder="Örn: 27.6" value={measurements.charger_device} onChange={e => setMeasurements({...measurements, charger_device: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Topraklama Ölçümü</label>
-                      <input type="text" placeholder="Örn: 0.8 Ohm" value={measurements.grounding} onChange={e => setMeasurements({...measurements, grounding: e.target.value})} />
+                      <input type="text" placeholder="Örn: 0.8" value={measurements.grounding} onChange={e => setMeasurements({...measurements, grounding: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Motor Hararet Sıcaklığı (°C)</label>
-                      <input type="text" placeholder="Örn: 75" value={measurements.coolant_temp} onChange={e => setMeasurements({...measurements, coolant_temp: e.target.value})} />
+                      <input type="text" placeholder="Örn: 75" value={measurements.coolant_temp} onChange={e => setMeasurements({...measurements, coolant_temp: e.target.value.replace(/[^0-9.-]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Motor Yağ Basıncı (BAR)</label>
-                      <input type="text" placeholder="Örn: 4.5" value={measurements.oil_pressure} onChange={e => setMeasurements({...measurements, oil_pressure: e.target.value})} />
+                      <input type="text" placeholder="Örn: 4.5" value={measurements.oil_pressure} onChange={e => setMeasurements({...measurements, oil_pressure: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '11px' }}>Frekans (Hz)</label>
-                      <input type="text" placeholder="Örn: 50" value={measurements.frequency} onChange={e => setMeasurements({...measurements, frequency: e.target.value})} />
+                      <input type="text" placeholder="Örn: 50" value={measurements.frequency} onChange={e => setMeasurements({...measurements, frequency: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label style={{ fontSize: '11px' }}>Yakıt Seviyesi</label>
-                      <input type="text" placeholder="Örn: %80" value={measurements.fuel_level_text} onChange={e => setMeasurements({...measurements, fuel_level_text: e.target.value})} />
+                      <label style={{ fontSize: '11px' }}>Yakıt Seviyesi (%)</label>
+                      <input type="text" placeholder="Örn: 80" value={measurements.fuel_level_text} onChange={e => setMeasurements({...measurements, fuel_level_text: e.target.value.replace(/[^0-9.]/g, '')})} />
                     </div>
                   </div>
 
@@ -968,22 +968,22 @@ ${description}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-input)', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                       <span style={{ fontWeight: 'bold', fontSize: '11.5px', color: 'var(--primary)' }}>U Fazı</span>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_u} onChange={e => setMeasurements({...measurements, voltage_u: e.target.value})} />
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_u} onChange={e => setMeasurements({...measurements, current_u: e.target.value})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_u} onChange={e => setMeasurements({...measurements, voltage_u: e.target.value.replace(/[^0-9.]/g, '')})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_u} onChange={e => setMeasurements({...measurements, current_u: e.target.value.replace(/[^0-9.]/g, '')})} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-input)', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                       <span style={{ fontWeight: 'bold', fontSize: '11.5px', color: 'var(--primary)' }}>V Fazı</span>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_v} onChange={e => setMeasurements({...measurements, voltage_v: e.target.value})} />
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_v} onChange={e => setMeasurements({...measurements, current_v: e.target.value})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_v} onChange={e => setMeasurements({...measurements, voltage_v: e.target.value.replace(/[^0-9.]/g, '')})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_v} onChange={e => setMeasurements({...measurements, current_v: e.target.value.replace(/[^0-9.]/g, '')})} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-input)', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                       <span style={{ fontWeight: 'bold', fontSize: '11.5px', color: 'var(--primary)' }}>W Fazı</span>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_w} onChange={e => setMeasurements({...measurements, voltage_w: e.target.value})} />
-                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_w} onChange={e => setMeasurements({...measurements, current_w: e.target.value})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Volt" value={measurements.voltage_w} onChange={e => setMeasurements({...measurements, voltage_w: e.target.value.replace(/[^0-9.]/g, '')})} />
+                        <input type="text" style={{ padding: '6px', fontSize: '12px' }} placeholder="Amper" value={measurements.current_w} onChange={e => setMeasurements({...measurements, current_w: e.target.value.replace(/[^0-9.]/g, '')})} />
                       </div>
                     </div>
                   </div>
@@ -1083,10 +1083,10 @@ ${description}
                     <div className="form-group" style={{ margin: 0 }}>
                       <label style={{ fontSize: '12px', fontWeight: 'bold' }}>İşçilik Ücreti (TL)</label>
                       <input 
-                        type="number" 
-                        min={0} 
+                        type="text" 
+                        placeholder="Örn: 1500" 
                         value={serviceFee} 
-                        onChange={e => setServiceFee(e.target.value)} 
+                        onChange={e => setServiceFee(e.target.value.replace(/[^0-9.]/g, ''))} 
                       />
                     </div>
 
@@ -1096,7 +1096,7 @@ ${description}
                         type="text" 
                         placeholder="Örn: Ahmet Yılmaz" 
                         value={customerAuthorizedName} 
-                        onChange={e => setCustomerAuthorizedName(e.target.value)} 
+                        onChange={e => setCustomerAuthorizedName(e.target.value.replace(/[0-9]/g, ''))} 
                       />
                     </div>
 
