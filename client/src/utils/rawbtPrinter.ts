@@ -128,16 +128,19 @@ export const sendToRawBTPrinter = (data: any) => {
     utf8Bytes.forEach(b => binary += String.fromCharCode(b));
     const base64Data = window.btoa(binary);
 
-    // RawBT Intent URL for Android
-    const intentUrl = `intent:base64,${base64Data}#Intent;scheme=rawbt;package=ru.a414.rawbt;type=text/plain;end;`;
+    // Direct RawBT URI protocol (Works directly when RawBT is installed)
+    const rawbtUri = `rawbt:data:text/plain;base64,${base64Data}`;
+    
+    // Also generate PDF in parallel as backup
+    generateServiceThermalPDF(data);
 
-    // Attempt trigger RawBT Intent
-    window.location.href = intentUrl;
-    toast.success('RawBT yazıcı komutu gönderildi!');
+    // Trigger RawBT URI scheme
+    window.location.href = rawbtUri;
+    toast.success('Yazıcı komutu gönderildi ve 80mm PDF hazırlandı!');
 
   } catch (err) {
     console.error('RawBT print error:', err);
-    toast.error('Bluetooth yazıcıya gönderilemedi. 80mm PDF indiriliyor...');
+    toast.error('80mm PDF indiriliyor...');
     generateServiceThermalPDF(data);
   }
 };
