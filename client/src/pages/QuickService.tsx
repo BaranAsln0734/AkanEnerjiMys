@@ -4,6 +4,7 @@ import { Play, Zap, User, Settings, ClipboardCheck, ArrowRight, Plus, Trash2, Fi
 import api from '../api';
 import { toast } from 'react-hot-toast';
 import { generateServicePDF, generateServiceThermalPDF } from '../utils/pdfGenerator';
+import { sendToRawBTPrinter } from '../utils/rawbtPrinter';
 
 interface Customer {
   id: number;
@@ -213,7 +214,7 @@ const QuickService = () => {
     setUsedParts(usedParts.filter(p => p.id !== id));
   };
 
-  const handleFormSubmit = async (e: React.FormEvent, pdfFormat: 'a4' | '80mm' = 'a4') => {
+  const handleFormSubmit = async (e: React.FormEvent, printMode: 'a4' | '80mm' | 'print' = 'a4') => {
     e.preventDefault();
 
     if (!customerForm.name || !customerForm.phone || !customerForm.address) {
@@ -367,8 +368,10 @@ ${description}
         technician_name: techName
       };
 
-      // Trigger chosen PDF format
-      if (pdfFormat === '80mm') {
+      // Trigger chosen print mode
+      if (printMode === 'print') {
+        sendToRawBTPrinter(pdfData);
+      } else if (printMode === '80mm') {
         generateServiceThermalPDF(pdfData);
       } else {
         generateServicePDF(pdfData);
@@ -566,6 +569,48 @@ ${description}
     });
   };
 
+  const printExistingRawBT = (record: ServiceRecord) => {
+    let parsedChecklist: any = {};
+    if (record.checklist_json) {
+      try {
+        parsedChecklist = JSON.parse(record.checklist_json);
+      } catch (e) {}
+    }
+
+    const totalPartsCost = Array.isArray(parsedChecklist.used_parts) 
+      ? parsedChecklist.used_parts.reduce((sum: number, p: any) => sum + (p.quantity * (p.unit_price || 0)), 0)
+      : 0;
+
+    sendToRawBTPrinter({
+      id: record.id,
+      generator: {
+        brand: record.generator_brand || '',
+        model: record.generator_model || '',
+        serial_number: record.generator_serial || '',
+        kva: record.generator_kva || '',
+        location: record.generator_serial || ''
+      },
+      customer: {
+        name: record.customer_name || '',
+        phone: record.customer_phone || '',
+        address: record.customer_address || ''
+      },
+      serial_number: record.generator_serial || '',
+      model: record.generator_model || '',
+      service_date: new Date(record.service_date).toLocaleDateString('tr-TR'),
+      description: record.description?.split('EK NOTLAR:\n')[1] || record.description || '',
+      techSig: record.technician_signature_url || '',
+      custSig: record.customer_signature_url || '',
+      service_fee: record.service_fee || 0,
+      total_cost: totalPartsCost,
+      used_parts: parsedChecklist.used_parts || [],
+      checklist: parsedChecklist.checklist || {},
+      measurements: parsedChecklist.measurements || {},
+      customer_authorized_name: parsedChecklist.customer_authorized_name || '',
+      technician_name: parsedChecklist.technician_name || 'Teknisyen'
+    });
+  };
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '10px' }}>
       
@@ -667,7 +712,7 @@ ${description}
                       <button
                         onClick={() => downloadExistingThermalPDF(record)}
                         className="btn btn-secondary"
-                        title="80mm Termal Fiş İndir"
+                        title="80mm Termal PDF İndir"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -679,7 +724,27 @@ ${description}
                           marginRight: '6px'
                         }}
                       >
-                        <Printer size={12} /> 80mm Fiş
+                        <FileText size={12} /> 80mm PDF
+                      </button>
+                      <button
+                        onClick={() => printExistingRawBT(record)}
+                        className="btn btn-secondary"
+                        title="Milestone Bluetooth Yazıcıya Gönder (RawBT)"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          background: '#059669',
+                          color: '#ffffff',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          marginRight: '6px'
+                        }}
+                      >
+                        <Printer size={12} /> Yazdır (Bluetooth)
                       </button>
                       <button
                         onClick={() => handleEditClick(record)}
@@ -1171,9 +1236,26 @@ ${description}
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="btn btn-secondary"
                     disabled={submitting}
                     onClick={(e) => handleFormSubmit(e, 'a4')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 20px',
+                      fontWeight: '700',
+                      borderRadius: '10px',
+                      cursor: submitting ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <Check size={18} /> Kaydet (A4 PDF)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={submitting}
+                    onClick={(e) => handleFormSubmit(e, 'print')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1181,6 +1263,10 @@ ${description}
                       padding: '12px 24px',
                       fontWeight: '800',
                       borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                       cursor: submitting ? 'not-allowed' : 'pointer'
                     }}
                   >
@@ -1190,29 +1276,9 @@ ${description}
                       </>
                     ) : (
                       <>
-                        <Check size={18} /> Raporu Kaydet ve A4 PDF Üret
+                        <Printer size={18} /> Kaydet & Yazdır (80mm Bluetooth)
                       </>
                     )}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    disabled={submitting}
-                    onClick={(e) => handleFormSubmit(e, '80mm')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 24px',
-                      fontWeight: '800',
-                      borderRadius: '10px',
-                      background: '#d97706',
-                      color: '#ffffff',
-                      border: 'none',
-                      cursor: submitting ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    <Printer size={18} /> Raporu Kaydet ve 80mm Fiş Üret
                   </button>
                 </div>
 
