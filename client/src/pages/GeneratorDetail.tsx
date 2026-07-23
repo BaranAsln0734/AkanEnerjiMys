@@ -605,7 +605,7 @@ const GeneratorDetail = () => {
     printWindow.document.close();
   };
 
-  const handleDownloadPDF = (record: any, type: 'a4' | 'thermal' = 'a4') => {
+  const handleDownloadPDF = (record: any, type: 'a4' | 'thermal' | 'rawbt' = 'a4') => {
     if (!gen) return;
     let checklistObj: any = null;
     let measurementsObj: any = null;
