@@ -6,6 +6,7 @@ import SignatureCanvas from 'react-signature-canvas';
 import { Check, ClipboardCheck, Trash2, Save, Printer, Plus, Minus, ArrowLeft, DollarSign, AlertCircle, Battery, Droplets, Wind, Zap, Calendar, FileText, X, Settings, Camera, Receipt, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { generateServicePDF, generateServiceThermalPDF } from '../utils/pdfGenerator';
+import { sendToRawBTPrinter } from '../utils/rawbtPrinter';
 import { queueOfflineService } from '../utils/offlineQueue';
 
 interface GeneratorDetail {
@@ -644,7 +645,9 @@ const GeneratorDetail = () => {
       tech_name: techNameStr
     };
 
-    if (type === 'thermal') {
+    if (type === 'rawbt') {
+      sendToRawBTPrinter(docData);
+    } else if (type === 'thermal') {
       generateServiceThermalPDF(docData);
     } else {
       generateServicePDF(docData);
@@ -748,7 +751,7 @@ const GeneratorDetail = () => {
     );
   };
 
-  const handleServiceSubmit = async (e: React.FormEvent) => {
+  const handleServiceSubmit = async (e: React.FormEvent, printMode: 'a4' | 'print' = 'a4') => {
     e.preventDefault();
     if (!techSigRef.current || !custSigRef.current || !gen) return;
 
@@ -836,7 +839,7 @@ ${serviceData.description}
         toast.success('Servis kaydı başarıyla oluşturuldu.');
       }
 
-      generateServicePDF({
+      const pdfDocData = {
         generator: gen,
         customer: gen.customer,
         serial_number: gen.serial_number,
@@ -856,7 +859,13 @@ ${serviceData.description}
         photo_after_url: photoAfter,
         start_time: serviceData.start_time,
         end_time: endTimeStr
-      });
+      };
+
+      if (printMode === 'print') {
+        sendToRawBTPrinter(pdfDocData);
+      } else {
+        generateServicePDF(pdfDocData);
+      }
 
       setPhotoBefore(null);
       setPhotoAfter(null);
@@ -889,7 +898,7 @@ ${serviceData.description}
       console.error('Error saving service record, fallback to offline queue:', error);
       queueOfflineService(postData);
 
-      generateServicePDF({
+      const fallbackDocData = {
         generator: gen,
         customer: gen.customer,
         serial_number: gen.serial_number,
@@ -907,7 +916,13 @@ ${serviceData.description}
         tech_name: techName,
         start_time: serviceData.start_time,
         end_time: endTimeStr
-      });
+      };
+
+      if (printMode === 'print') {
+        sendToRawBTPrinter(fallbackDocData);
+      } else {
+        generateServicePDF(fallbackDocData);
+      }
 
       setShowServiceForm(false);
       setChecklist({});
@@ -1473,8 +1488,33 @@ ${serviceData.description}
               </div>
             </div>
             <div style={{ marginTop: '30px', display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary" style={{ padding: '15px 30px', fontSize: '16px', flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Save size={20} style={{ marginRight: '8px' }} /> Servisi Tamamla ve Kaydet
+              <button 
+                type="submit" 
+                className="btn btn-secondary" 
+                onClick={(e) => handleServiceSubmit(e, 'a4')}
+                style={{ padding: '14px 24px', fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Save size={18} style={{ marginRight: '8px' }} /> Kaydet (A4 PDF)
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={(e) => handleServiceSubmit(e, 'print')}
+                style={{
+                  padding: '14px 28px',
+                  fontSize: '15px',
+                  fontWeight: '800',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                  cursor: 'pointer'
+                }}
+              >
+                <Printer size={18} style={{ marginRight: '8px' }} /> Kaydet & Yazdır (80mm Bluetooth)
               </button>
             </div>
           </form>
@@ -1559,9 +1599,17 @@ ${serviceData.description}
                               className="btn btn-secondary" 
                               style={{ padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f59e0b', borderColor: '#f59e0b', color: '#fff' }} 
                               onClick={() => handleDownloadPDF(item, 'thermal')}
-                              title="80mm Termal Fiş İndir"
+                              title="80mm Termal PDF İndir"
                             >
                               <Receipt size={14} />
+                            </button>
+                            <button 
+                              className="btn btn-secondary" 
+                              style={{ padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#059669', borderColor: '#059669', color: '#fff' }} 
+                              onClick={() => handleDownloadPDF(item, 'rawbt')}
+                              title="Milestone Bluetooth Yazıcıya Gönder (RawBT)"
+                            >
+                              <Printer size={14} />
                             </button>
                           </div>
                         ) : (
